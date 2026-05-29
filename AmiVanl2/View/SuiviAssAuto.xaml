@@ -1,0 +1,81 @@
+<UserControl x:Class="AmiVanl2.View.SuiviAssAuto"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White"
+             MinWidth="900"
+             MinHeight="550">
+
+    <Grid Margin="25">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="1.6*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Suivi assemblage automatique"
+                       FontSize="30"
+                       FontFamily="Bahnschrift"
+                       FontWeight="Bold"
+                       Foreground="#1E1E1E"/>
+
+            <Button Grid.Column="1"
+                Content="Voir les Objectifs"
+                Width="160"
+                Height="38"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                FontFamily="Bahnschrift"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Background="#2F5D8C"
+                Foreground="White"
+                BorderThickness="0"
+                Name="BtnGoToPage2AssAuto"
+                Cursor="Hand" Click="BtnGoToPage2AssAuto_Click"/>
+
+
+            <TextBlock Text="Analyse des productions journalières par référence et machine."
+                       FontSize="14"
+                       FontFamily="Bahnschrift"
+                       Foreground="#666666"/>
+            
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Background="#F6E1CF"
+                CornerRadius="15"
+                Padding="30"
+                MinHeight="900"
+                Margin="0,10,0,0">
+
+            <Grid>
+                <TextBlock Text="1 — Production journalière VS objectif"
+                           FontSize="20"
+                           FontFamily="Bahnschrift"
+                           FontWeight="SemiBold"
+                           Foreground="#222222"
+                           VerticalAlignment="Top"/>
+
+                <Grid Margin="0,45,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="165"/>
+                        <RowDefinition Height="95"/>
+                        <RowDefinition Height="165"/>
+                        <RowDefinition Height="115"/>
+                    </Grid.RowDefinitions>
+
+                    <oxy:PlotView x:Name="PlotAssAutoGroupe1" Grid.Row="0"/>
+
+                    <Grid x:Name="LegendAssAutoGroupe1" Grid.Row="1"/>
+
+                    <oxy:PlotView x:Name="PlotAssAutoGroupe2" Grid.Row="2"/>
+
+                    <Grid x:Name="LegendAssAutoGroupe2" Grid.Row="3"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>
