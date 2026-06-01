@@ -856,8 +856,7 @@ namespace AmiVanl2.Service
 
         private PlotModel BuildCamembert(string titre, double prod, double obj)
         {
-            double reste  = Math.Max(0, obj - prod);
-            bool   atteint = prod >= obj;
+            double reste = Math.Max(0, obj - prod);
 
             var model = new PlotModel { Title = titre, Background = OxyColors.White };
             var serie = new PieSeries
@@ -866,12 +865,16 @@ namespace AmiVanl2.Service
                 InsideLabelFormat = "{2:0}%", OutsideLabelFormat = ""
             };
 
-            serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
-            {
-                Fill = atteint ? OxyColor.FromRgb(40, 160, 80) : OxyColor.FromRgb(210, 60, 60)
-            });
+            // Vert = ce qui est fait, rouge = ce qui reste a faire
+            if (prod > 0)
+                serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
+                    { Fill = OxyColor.FromRgb(40, 160, 80) });
             if (reste > 0)
-                serie.Slices.Add(new PieSlice("Reste", reste) { Fill = OxyColor.FromRgb(210, 210, 210) });
+                serie.Slices.Add(new PieSlice("Reste", reste)
+                    { Fill = OxyColor.FromRgb(210, 60, 60) });
+            if (prod <= 0 && reste <= 0)
+                serie.Slices.Add(new PieSlice("Aucune donnee", 1)
+                    { Fill = OxyColor.FromRgb(200, 200, 200) });
 
             model.Series.Add(serie);
             return model;
