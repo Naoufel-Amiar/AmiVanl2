@@ -786,8 +786,6 @@ namespace AmiVanl2.Service
                     var op0 = ops[0];
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
                         new XRect(x0 + 3, ry + 2, colRefW - 6, dataRowH * 0.45), XStringFormats.CenterLeft);
-                    gfx.DrawString(op0.AncienCode, FTiny, new XSolidBrush(XColor.FromArgb(60, 60, 60)),
-                        new XRect(x0 + 3, ry + dataRowH * 0.45, colRefW - 6, dataRowH * 0.35), XStringFormats.CenterLeft);
 
                     // Lignes par operation
                     for (int opIdx = 0; opIdx < opCount; opIdx++)
