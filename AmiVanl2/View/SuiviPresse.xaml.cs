@@ -24,7 +24,9 @@ namespace AmiVanl2.View
 
             var refsDistinctes = AppData.Presses
                 .GroupBy(p => new { p.Reference, p.Machine })
-                .Select(g => g.First()).ToList();
+                .Select(g => g.First())
+                .Where(p => p.TotalProduction > 0 || p.ObjectifSemaine > 0)
+                .ToList();
             int moitie = (refsDistinctes.Count + 1) / 2;
             List<PresseProduction> groupe1 = refsDistinctes.Take(moitie).ToList();
             List<PresseProduction> groupe2 = refsDistinctes.Skip(moitie).ToList();
