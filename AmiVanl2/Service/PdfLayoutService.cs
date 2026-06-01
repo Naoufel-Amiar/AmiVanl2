@@ -883,7 +883,6 @@ namespace AmiVanl2.Service
                 InsideLabelPosition = 0.6,
                 InsideLabelFormat   = "{2:0}%",  // % a l'interieur de la part
                 OutsideLabelFormat  = "{0}",      // valeur reelle a l'exterieur (prise sur le label de la part)
-                LabelMargin         = 4,
                 FontSize            = 8
             };
 
