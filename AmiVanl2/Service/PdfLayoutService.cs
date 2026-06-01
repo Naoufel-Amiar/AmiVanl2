@@ -15,13 +15,11 @@ namespace AmiVanl2.Service
 {
     internal class PdfLayoutService
     {
-        // A3 paysage en points (1pt = 1/72 pouce). A3 = 420×297mm
         private const double W = 1190.55;
         private const double H = 841.89;
         private const double Marge = 28;
         private const double HeaderH = 52;
 
-        // Palette couleurs sections (identiques aux vues WPF)
         private static readonly XColor ColPresse    = XColor.FromArgb(206, 195, 193);
         private static readonly XColor ColAssAuto   = XColor.FromArgb(246, 225, 207);
         private static readonly XColor ColJoints    = XColor.FromArgb(195, 228, 195);
@@ -31,15 +29,37 @@ namespace AmiVanl2.Service
         private static readonly XColor ColVertClair = XColor.FromArgb(160, 220, 160);
         private static readonly XColor ColRougeClair= XColor.FromArgb(240, 180, 180);
         private static readonly XColor ColGris      = XColor.FromArgb(200, 200, 200);
+        private static readonly XColor ColBlanc     = XColor.FromArgb(255, 255, 255);
 
-        // Polices
         private readonly XFont FH1    = new XFont("Arial", 20, XFontStyleEx.Bold);
         private readonly XFont FNorm  = new XFont("Arial", 10, XFontStyleEx.Regular);
         private readonly XFont FBold  = new XFont("Arial", 10, XFontStyleEx.Bold);
         private readonly XFont FSmall = new XFont("Arial",  8, XFontStyleEx.Regular);
+        private readonly XFont FTiny  = new XFont("Arial",  7, XFontStyleEx.Regular);
 
         // ===================================================================
-        // POINT D'ENTRÉE
+        // CLASSES INTERNES
+        // ===================================================================
+
+        private class RefAgregee
+        {
+            public string Label;
+            public string[] DayLabels;
+            public double[] Prods;
+            public double ObjSemaine;
+        }
+
+        private class LigneTable
+        {
+            public string Reference;
+            public string AncienCode;
+            public double ObjSemaine;
+            public string[] DayLabels;    // 7 elements : Lun..Dim
+            public double[][] DayEquipes; // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
+        }
+
+        // ===================================================================
+        // POINT D'ENTREE
         // ===================================================================
 
         public void GenererRapport(string cheminPdf)
@@ -47,26 +67,16 @@ namespace AmiVanl2.Service
             PdfDocument doc = new PdfDocument();
             doc.Info.Title = "Rapport de Suivi de Production";
 
-            // Filtrage : on exclut les lignes sans aucune production sur la semaine
-            var presses    = AppData.Presses?
-                .Where(p => ProdTotalPresse(p) > 0).ToList()
-                ?? new List<PresseProduction>();
-
-            var assAutos   = AppData.AssAutos?
-                .Where(a => ProdTotalAssAuto(a) > 0).ToList()
-                ?? new List<AssAutoProduction>();
-
-            var joints     = AppData.Joints?
-                .Where(j => j.TotalProduction > 0).ToList()
-                ?? new List<JointProduction>();
-
-            var tris       = AppData.Tris?
-                .Where(t => ProdTotalTri(t) > 0).ToList()
-                ?? new List<TriProduction>();
-
-            var assManuels = AppData.AssManuels?
-                .Where(m => ProdTotalAssManu(m) > 0).ToList()
-                ?? new List<AssManuelProduction>();
+            var presses    = AppData.Presses?.Where(p => ProdTotalPresse(p) > 0).ToList()
+                             ?? new List<PresseProduction>();
+            var assAutos   = AppData.AssAutos?.Where(a => ProdTotalAssAuto(a) > 0).ToList()
+                             ?? new List<AssAutoProduction>();
+            var joints     = AppData.Joints?.Where(j => j.TotalProduction > 0).ToList()
+                             ?? new List<JointProduction>();
+            var tris       = AppData.Tris?.Where(t => ProdTotalTri(t) > 0).ToList()
+                             ?? new List<TriProduction>();
+            var assManuels = AppData.AssManuels?.Where(m => ProdTotalAssManu(m) > 0).ToList()
+                             ?? new List<AssManuelProduction>();
 
             PageGarde(doc, presses, assAutos, joints, tris, assManuels);
 
@@ -87,13 +97,17 @@ namespace AmiVanl2.Service
             if (joints.Count > 0)
             {
                 PageSeparateur(doc, "JOINTS", ColJoints);
-                PageJoints(doc, joints);
+                PageTableEquipes(doc,
+                    "Joints — Suivi journalier par equipe et par reference",
+                    ColJoints, BuildLignesJoints(joints));
             }
 
             if (tris.Count > 0)
             {
                 PageSeparateur(doc, "TRI", ColTri);
-                PageTri(doc, tris);
+                PageTableEquipes(doc,
+                    "Tri — Suivi journalier par equipe et par reference",
+                    ColTri, BuildLignesTri(tris));
             }
 
             if (assManuels.Count > 0)
@@ -132,7 +146,7 @@ namespace AmiVanl2.Service
             m.ProdSamedi + m.ProdDimanche;
 
         // ===================================================================
-        // HELPERS GÉNÉRAUX
+        // HELPERS GENERAUX
         // ===================================================================
 
         private PdfPage NouvellePageA3(PdfDocument doc)
@@ -169,12 +183,10 @@ namespace AmiVanl2.Service
                 centrer ? XStringFormats.Center : XStringFormats.CenterLeft);
         }
 
-        // Rend un PlotModel OxyPlot en image et l'insère dans la page PDF
         private void PlacerGraphique(XGraphics gfx, PlotModel model,
             double x, double y, double largeur, double hauteur)
         {
             if (largeur <= 0 || hauteur <= 0) return;
-
             int pixW = (int)(largeur * 2.0);
             int pixH = (int)(hauteur * 2.0);
             if (pixW < 10 || pixH < 10) return;
@@ -210,27 +222,21 @@ namespace AmiVanl2.Service
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-
-                // Bande bleue en haut
                 gfx.DrawRectangle(new XSolidBrush(ColNavy), 0, 0, W, 180);
 
-                // Titre
                 var fTitre = new XFont("Arial", 34, XFontStyleEx.Bold);
                 gfx.DrawString("RAPPORT DE SUIVI DE PRODUCTION", fTitre, XBrushes.White,
                     new XRect(0, 40, W, 75), XStringFormats.Center);
 
-                // Date
                 var fDate = new XFont("Arial", 14, XFontStyleEx.Regular);
                 gfx.DrawString("Genere le " + DateTime.Now.ToString("dd/MM/yyyy a HH:mm"),
                     fDate, XBrushes.White, new XRect(0, 125, W, 38), XStringFormats.Center);
 
-                // Titre "Sections"
                 var fSec = new XFont("Arial", 14, XFontStyleEx.Bold);
                 gfx.DrawString("SECTIONS DU RAPPORT", fSec,
                     new XSolidBrush(XColor.FromArgb(50, 50, 50)),
                     new XRect(0, 218, W, 28), XStringFormats.Center);
 
-                // Cartes sections — basées sur les listes filtrées
                 var sections = new (string Nom, XColor Couleur, bool Active, int NbRefs)[]
                 {
                     ("Suivi Presse",           ColPresse,    presses.Count > 0,    presses.Select(p => p.Reference).Distinct().Count()),
@@ -262,14 +268,13 @@ namespace AmiVanl2.Service
                     startX += cardW + gap;
                 }
 
-                // Pied de page
-                gfx.DrawString("Document à usage interne — Impression recommandée en A3",
+                gfx.DrawString("Document a usage interne — Impression recommandee en A3",
                     FSmall, XBrushes.Gray, new XRect(0, H - 28, W, 18), XStringFormats.Center);
             }
         }
 
         // ===================================================================
-        // SÉPARATEUR DE SECTION
+        // SEPARATEUR DE SECTION
         // ===================================================================
 
         private void PageSeparateur(PdfDocument doc, string titre, XColor couleur)
@@ -278,10 +283,8 @@ namespace AmiVanl2.Service
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(new XSolidBrush(couleur), 0, 0, W, H);
-
                 var fTitre = new XFont("Arial", 50, XFontStyleEx.Bold);
                 var pen = new XPen(XColor.FromArgb(80, 80, 80), 1.5);
-
                 gfx.DrawLine(pen, 80, H / 2 - 62, W - 80, H / 2 - 62);
                 gfx.DrawString(titre, fTitre,
                     new XSolidBrush(XColor.FromArgb(30, 30, 30)),
@@ -291,18 +294,31 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // PRESSE — BARRES JOURNALIÈRES
+        // PRESSE — BARRES PAR REFERENCE (une chart par ref, valeurs + objectif)
         // ===================================================================
 
         private void PagePresseBarres(PdfDocument doc, List<PresseProduction> presses)
         {
-            // Découpe en groupes de 6 max pour que les barres restent lisibles
-            int taille = Math.Min(6, Math.Max(1, presses.Count <= 6 ? presses.Count : (presses.Count + 1) / 2));
-            var g1 = presses.Take(taille).ToList();
-            var g2 = presses.Skip(taille).Take(taille).ToList();
+            var refs = presses.GroupBy(p => p.Reference).Select(g => new RefAgregee
+            {
+                Label = g.Key.ToString("000000") + " — " +
+                        string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                        "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                        "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+                DayLabels = new[] {
+                    g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
+                    g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
+                },
+                Prods = new[] {
+                    g.Sum(x => x.ProdLundi),    g.Sum(x => x.ProdMardi),    g.Sum(x => x.ProdMercredi),
+                    g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
+                    g.Sum(x => x.ProdDimanche)
+                },
+                ObjSemaine = g.Sum(x => x.ObjectifSemaine)
+            }).ToList();
 
-            var m1 = BuildBarresPresse(g1, "Production presse — Groupe 1");
-            var m2 = g2.Count > 0 ? BuildBarresPresse(g2, "Production presse — Groupe 2") : null;
+            int cols = refs.Count <= 2 ? refs.Count : refs.Count <= 4 ? 2 : 3;
+            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
 
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
@@ -312,53 +328,18 @@ namespace AmiVanl2.Service
                 DessinerLegendeCouleurs(gfx, H - 18);
 
                 double y0 = HeaderH + Marge;
-                double cW = W - 2 * Marge;
+                double cH = (H - y0 - Marge - 22) / rows;
+                double cW = (W - 2 * Marge) / cols;
 
-                if (m2 != null)
+                for (int i = 0; i < refs.Count; i++)
                 {
-                    double cH = (H - y0 - Marge - 22) / 2;
-                    PlacerGraphique(gfx, m1, Marge, y0, cW, cH);
-                    PlacerGraphique(gfx, m2, Marge, y0 + cH + 4, cW, cH);
-                }
-                else
-                {
-                    PlacerGraphique(gfx, m1, Marge, y0, cW, H - y0 - Marge - 22);
+                    int col = i % cols, row = i / cols;
+                    var r = refs[i];
+                    var model = BuildBarresJournalieres(r.Label, r.DayLabels, r.Prods, r.ObjSemaine);
+                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
-        }
-
-        private PlotModel BuildBarresPresse(List<PresseProduction> groupe, string titre)
-        {
-            var model = new PlotModel { Title = titre, Background = OxyColors.White };
-            if (groupe.Count == 0) return model;
-
-            var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
-            var p0 = groupe[0];
-            foreach (var l in new[] { p0.LabelLundi, p0.LabelMardi, p0.LabelMercredi,
-                                      p0.LabelJeudi, p0.LabelVendredi, p0.LabelSamedi, p0.LabelDimanche })
-                axeX.Labels.Add(l);
-
-            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
-            var serie = new RectangleBarSeries { Title = "Références" };
-            double lB = 0.18, eG = 0.8;
-
-            for (int j = 0; j < 7; j++)
-                for (int r = 0; r < groupe.Count; r++)
-                {
-                    var p = groupe[r];
-                    double prod = ProdJourPresse(p, j);
-                    double obj  = p.ObjectifSemaine / 7.0;
-                    double x0   = j - eG / 2.0 + r * lB;
-                    var item    = new RectangleBarItem(x0, 0, x0 + lB, prod);
-                    item.Color  = prod >= obj ? OxyColors.SeaGreen : OxyColors.IndianRed;
-                    serie.Items.Add(item);
-                }
-
-            model.Axes.Add(axeX);
-            model.Axes.Add(axeY);
-            model.Series.Add(serie);
-            return model;
         }
 
         // ===================================================================
@@ -367,13 +348,12 @@ namespace AmiVanl2.Service
 
         private void PagePresseCamemberts(PdfDocument doc, List<PresseProduction> presses)
         {
-            // Agrégation par référence (une même ref peut tourner sur plusieurs machines)
             var refs = presses
                 .GroupBy(p => p.Reference)
                 .Select(g => new {
-                    Titre        = g.Key.ToString("000000") + " - " + string.Join("/", g.Select(x => x.Machine).Distinct()),
-                    TotalProd    = g.Sum(x => x.TotalProduction),
-                    TotalObj     = g.Max(x => x.ObjectifSemaine)
+                    Titre     = g.Key.ToString("000000") + " - " + string.Join("/", g.Select(x => x.Machine).Distinct()),
+                    TotalProd = g.Sum(x => x.TotalProduction),
+                    TotalObj  = g.Max(x => x.ObjectifSemaine)
                 }).ToList();
 
             int cols = refs.Count <= 3 ? refs.Count : refs.Count <= 6 ? 3 : 4;
@@ -401,17 +381,31 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // ASS AUTO — BARRES JOURNALIÈRES
+        // ASS AUTO — BARRES PAR REFERENCE
         // ===================================================================
 
         private void PageAssAutoBarres(PdfDocument doc, List<AssAutoProduction> assAutos)
         {
-            int taille = Math.Min(6, Math.Max(1, assAutos.Count <= 6 ? assAutos.Count : (assAutos.Count + 1) / 2));
-            var g1 = assAutos.Take(taille).ToList();
-            var g2 = assAutos.Skip(taille).Take(taille).ToList();
+            var refs = assAutos.GroupBy(a => a.Reference).Select(g => new RefAgregee
+            {
+                Label = g.Key + " — " +
+                        string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                        "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                        "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+                DayLabels = new[] {
+                    g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
+                    g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
+                },
+                Prods = new[] {
+                    g.Sum(x => x.ProdLundi),    g.Sum(x => x.ProdMardi),    g.Sum(x => x.ProdMercredi),
+                    g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
+                    g.Sum(x => x.ProdDimanche)
+                },
+                ObjSemaine = g.Sum(x => x.ObjectifSemaine)
+            }).ToList();
 
-            var m1 = BuildBarresAssAuto(g1, "Assemblage Auto — Groupe 1");
-            var m2 = g2.Count > 0 ? BuildBarresAssAuto(g2, "Assemblage Auto — Groupe 2") : null;
+            int cols = refs.Count <= 2 ? refs.Count : refs.Count <= 4 ? 2 : 3;
+            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
 
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
@@ -421,57 +415,22 @@ namespace AmiVanl2.Service
                 DessinerLegendeCouleurs(gfx, H - 18);
 
                 double y0 = HeaderH + Marge;
-                double cW  = W - 2 * Marge;
+                double cH = (H - y0 - Marge - 22) / rows;
+                double cW = (W - 2 * Marge) / cols;
 
-                if (m2 != null)
+                for (int i = 0; i < refs.Count; i++)
                 {
-                    double cH = (H - y0 - Marge - 22) / 2;
-                    PlacerGraphique(gfx, m1, Marge, y0, cW, cH);
-                    PlacerGraphique(gfx, m2, Marge, y0 + cH + 4, cW, cH);
-                }
-                else
-                {
-                    PlacerGraphique(gfx, m1, Marge, y0, cW, H - y0 - Marge - 22);
+                    int col = i % cols, row = i / cols;
+                    var r = refs[i];
+                    var model = BuildBarresJournalieres(r.Label, r.DayLabels, r.Prods, r.ObjSemaine);
+                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
         }
 
-        private PlotModel BuildBarresAssAuto(List<AssAutoProduction> groupe, string titre)
-        {
-            var model = new PlotModel { Title = titre, Background = OxyColors.White };
-            if (groupe.Count == 0) return model;
-
-            var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
-            var a0 = groupe[0];
-            foreach (var l in new[] { a0.LabelLundi, a0.LabelMardi, a0.LabelMercredi,
-                                      a0.LabelJeudi, a0.LabelVendredi, a0.LabelSamedi, a0.LabelDimanche })
-                axeX.Labels.Add(l);
-
-            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
-            var serie = new RectangleBarSeries { Title = "Références" };
-            double lB = 0.18, eG = 0.8;
-
-            for (int j = 0; j < 7; j++)
-                for (int r = 0; r < groupe.Count; r++)
-                {
-                    var a    = groupe[r];
-                    double prod = ProdJourAssAuto(a, j);
-                    double obj  = a.ObjectifJournalierCalcule;
-                    double x0   = j - eG / 2.0 + r * lB;
-                    var item    = new RectangleBarItem(x0, 0, x0 + lB, prod);
-                    item.Color  = prod >= obj ? OxyColors.SeaGreen : OxyColors.IndianRed;
-                    serie.Items.Add(item);
-                }
-
-            model.Axes.Add(axeX);
-            model.Axes.Add(axeY);
-            model.Series.Add(serie);
-            return model;
-        }
-
         // ===================================================================
-        // ASS AUTO — CAMEMBERTS OBJECTIFS SEMAINE
+        // ASS AUTO — CAMEMBERTS
         // ===================================================================
 
         private void PageAssAutoCamemberts(PdfDocument doc, List<AssAutoProduction> assAutos)
@@ -484,6 +443,8 @@ namespace AmiVanl2.Service
                     TotalProd = g.Sum(x => x.TotalProduction),
                     TotalObj  = g.Sum(x => x.ObjectifSemaine)
                 }).ToList();
+
+            if (refs.Count == 0) return;
 
             int cols = refs.Count <= 3 ? refs.Count : refs.Count <= 6 ? 3 : 4;
             int rows = (int)Math.Ceiling(refs.Count / (double)cols);
@@ -510,75 +471,281 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // JOINTS — TABLEAU COMPACT
+        // METHODE GENERIQUE BARRES JOURNALIERES (Presse + AssAuto)
         // ===================================================================
 
-        private void PageJoints(PdfDocument doc, List<JointProduction> joints)
+        private PlotModel BuildBarresJournalieres(string titre, string[] jourLabels,
+            double[] prods, double objSemaine)
         {
-            // Camembert hebdo par référence (Equ1/Equ2/Equ3 + Reste vs objectif)
-            int cols = joints.Count <= 3 ? joints.Count : joints.Count <= 6 ? 3 : 4;
-            int rows = (int)Math.Ceiling(joints.Count / (double)cols);
+            var model = new PlotModel { Title = titre, Background = OxyColors.White };
+
+            var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
+            foreach (var l in jourLabels) axeX.Labels.Add(l);
+            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
+
+            var serie = new RectangleBarSeries { StrokeThickness = 0 };
+            double lB = 0.38;
+            double objJour = objSemaine > 0 ? objSemaine / 7.0 : 0;
+
+            for (int j = 0; j < 7; j++)
+            {
+                var item = new RectangleBarItem(j - lB / 2, 0, j + lB / 2, prods[j]);
+                item.Color = objJour > 0
+                    ? (prods[j] >= objJour ? OxyColors.SeaGreen : OxyColors.IndianRed)
+                    : OxyColor.FromRgb(100, 150, 220);
+                serie.Items.Add(item);
+
+                if (prods[j] > 0)
+                    model.Annotations.Add(new OxyPlot.Annotations.TextAnnotation
+                    {
+                        Text = prods[j].ToString("0"),
+                        TextPosition = new DataPoint(j, prods[j]),
+                        VerticalAlignment = OxyPlot.VerticalAlignment.Bottom,
+                        FontSize = 7,
+                        TextColor = OxyColors.Black,
+                        StrokeThickness = 0,
+                        Background = OxyColors.Transparent
+                    });
+            }
+
+            if (objJour > 0)
+                model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
+                {
+                    Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
+                    Y = objJour,
+                    MinimumX = -0.5,
+                    MaximumX = 4.5,
+                    Color = OxyColors.DarkOrange,
+                    LineStyle = LineStyle.Dash,
+                    StrokeThickness = 1.5,
+                    Text = "Obj/j: " + objJour.ToString("0"),
+                    TextColor = OxyColors.DarkOrange
+                });
+
+            model.Axes.Add(axeX);
+            model.Axes.Add(axeY);
+            model.Series.Add(serie);
+            return model;
+        }
+
+        // ===================================================================
+        // JOINTS / TRI — CONSTRUCTEURS DE LIGNES TABLE
+        // ===================================================================
+
+        private List<LigneTable> BuildLignesJoints(List<JointProduction> joints)
+        {
+            return joints.Select(jt => new LigneTable
+            {
+                Reference  = jt.Reference,
+                AncienCode = jt.AncienCode,
+                ObjSemaine = jt.ObjectifSemaine,
+                DayLabels  = new[] {
+                    jt.LabelLundi, jt.LabelMardi, jt.LabelMercredi,
+                    jt.LabelJeudi, jt.LabelVendredi, jt.LabelSamedi, jt.LabelDimanche
+                },
+                DayEquipes = new double[][] {
+                    new[] { jt.LundiEqu1,    jt.LundiEqu2,    jt.LundiEqu3    },
+                    new[] { jt.MardiEqu1,    jt.MardiEqu2,    jt.MardiEqu3    },
+                    new[] { jt.MercrediEqu1, jt.MercrediEqu2, jt.MercrediEqu3 },
+                    new[] { jt.JeudiEqu1,    jt.JeudiEqu2,    jt.JeudiEqu3    },
+                    new[] { jt.VendrediEqu1, jt.VendrediEqu2, jt.VendrediEqu3 },
+                    new[] { jt.ProdSamedi,   0.0,             0.0             },
+                    new[] { jt.ProdDimanche, 0.0,             0.0             },
+                    new[] {
+                        jt.LundiEqu1+jt.MardiEqu1+jt.MercrediEqu1+jt.JeudiEqu1+jt.VendrediEqu1,
+                        jt.LundiEqu2+jt.MardiEqu2+jt.MercrediEqu2+jt.JeudiEqu2+jt.VendrediEqu2,
+                        jt.LundiEqu3+jt.MardiEqu3+jt.MercrediEqu3+jt.JeudiEqu3+jt.VendrediEqu3
+                    }
+                }
+            }).ToList();
+        }
+
+        private List<LigneTable> BuildLignesTri(List<TriProduction> tris)
+        {
+            return tris.Select(tr => new LigneTable
+            {
+                Reference  = tr.Reference,
+                AncienCode = tr.AncienCode,
+                ObjSemaine = tr.ObjectifSemaine,
+                DayLabels  = new[] {
+                    tr.LabelLundi, tr.LabelMardi, tr.LabelMercredi,
+                    tr.LabelJeudi, tr.LabelVendredi, tr.LabelSamedi, tr.LabelDimanche
+                },
+                DayEquipes = new double[][] {
+                    new[] { tr.LundiEqu1,    tr.LundiEqu2,    tr.LundiEqu3    },
+                    new[] { tr.MardiEqu1,    tr.MardiEqu2,    tr.MardiEqu3    },
+                    new[] { tr.MercrediEqu1, tr.MercrediEqu2, tr.MercrediEqu3 },
+                    new[] { tr.JeudiEqu1,    tr.JeudiEqu2,    tr.JeudiEqu3    },
+                    new[] { tr.VendrediEqu1, tr.VendrediEqu2, tr.VendrediEqu3 },
+                    new[] { tr.ProdSamedi,   0.0,             0.0             },
+                    new[] { tr.ProdDimanche, 0.0,             0.0             },
+                    new[] {
+                        tr.LundiEqu1+tr.MardiEqu1+tr.MercrediEqu1+tr.JeudiEqu1+tr.VendrediEqu1,
+                        tr.LundiEqu2+tr.MardiEqu2+tr.MercrediEqu2+tr.JeudiEqu2+tr.VendrediEqu2,
+                        tr.LundiEqu3+tr.MardiEqu3+tr.MercrediEqu3+tr.JeudiEqu3+tr.VendrediEqu3
+                    }
+                }
+            }).ToList();
+        }
+
+        // ===================================================================
+        // JOINTS / TRI — TABLEAU VISUEL JOURNALIER PAR EQUIPE
+        // ===================================================================
+
+        private void PageTableEquipes(PdfDocument doc, string titre, XColor couleur,
+            List<LigneTable> lignes)
+        {
+            if (lignes.Count == 0) return;
 
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Joints — Taux d'atteinte objectif semaine par reference (EQU1/EQU2/EQU3)", ColJoints);
+                DessinerEnTete(gfx, titre, couleur);
 
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
+                double x0        = Marge;
+                double y0        = HeaderH + 4;
+                double tableW    = W - 2 * Marge;
+                double colRefW   = 108;
+                double colDataW  = (tableW - colRefW) / 8.0;
+                double headerRowH = 26;
+                double dataRowH  = (H - y0 - Marge - headerRowH) / lignes.Count;
 
-                for (int i = 0; i < joints.Count; i++)
+                // En-tete colonnes
+                XColor hBg = XColor.FromArgb(
+                    (int)(couleur.R * 0.78), (int)(couleur.G * 0.78), (int)(couleur.B * 0.78));
+                XColor hBgTotal = XColor.FromArgb(
+                    (int)(couleur.R * 0.65), (int)(couleur.G * 0.65), (int)(couleur.B * 0.65));
+
+                DessinerCellule(gfx, x0, y0, colRefW, headerRowH,
+                    "Ref / Ancien code / Objectif", FTiny, new XSolidBrush(hBg), true);
+
+                string[] dayHeaders = lignes[0].DayLabels.Concat(new[] { "TOTAL" }).ToArray();
+                for (int d = 0; d < 8; d++)
                 {
-                    var jt = joints[i];
-                    double equ1 = jt.LundiEqu1 + jt.MardiEqu1 + jt.MercrediEqu1 + jt.JeudiEqu1 + jt.VendrediEqu1;
-                    double equ2 = jt.LundiEqu2 + jt.MardiEqu2 + jt.MercrediEqu2 + jt.JeudiEqu2 + jt.VendrediEqu2;
-                    double equ3 = jt.LundiEqu3 + jt.MardiEqu3 + jt.MercrediEqu3 + jt.JeudiEqu3 + jt.VendrediEqu3;
-                    var model = BuildCamembertEquipes(jt.Reference + " - " + jt.AncienCode, equ1, equ2, equ3, jt.ObjectifSemaine);
-                    int col = i % cols, row = i / cols;
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 6, cH - 6);
+                    XColor bg = d == 7 ? hBgTotal : hBg;
+                    DessinerCellule(gfx, x0 + colRefW + d * colDataW, y0, colDataW, headerRowH,
+                        dayHeaders[d], FTiny, new XSolidBrush(bg), true);
                 }
+
+                // Max valeur journaliere pour echelle barres
+                double maxVal = 1;
+                foreach (var l in lignes)
+                    for (int d = 0; d < 7; d++)
+                        foreach (var v in l.DayEquipes[d])
+                            if (v > maxVal) maxVal = v;
+
+                // Lignes de donnees
+                for (int r = 0; r < lignes.Count; r++)
+                {
+                    var ligne = lignes[r];
+                    double ry = y0 + headerRowH + r * dataRowH;
+
+                    // Cellule reference
+                    XColor refBg = XColor.FromArgb(
+                        Math.Min(255, (int)(couleur.R * 0.94) + 8),
+                        Math.Min(255, (int)(couleur.G * 0.94) + 8),
+                        Math.Min(255, (int)(couleur.B * 0.94) + 8));
+                    gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, dataRowH);
+                    gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
+
+                    double refLineH = dataRowH / 3.0;
+                    string[] refLines = {
+                        ligne.Reference,
+                        ligne.AncienCode,
+                        "Obj: " + ligne.ObjSemaine.ToString("0")
+                    };
+                    for (int rl = 0; rl < 3; rl++)
+                        gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
+                            new XRect(x0 + 3, ry + rl * refLineH, colRefW - 6, refLineH),
+                            XStringFormats.CenterLeft);
+
+                    // Cellules journalieres
+                    for (int d = 0; d < 8; d++)
+                    {
+                        double cx = x0 + colRefW + d * colDataW;
+                        bool isTotal   = d == 7;
+                        bool isWeekend = d == 5 || d == 6;
+                        DessinerCelluleEquipes(gfx, cx, ry, colDataW, dataRowH,
+                            ligne.DayEquipes[d], maxVal, isTotal, isWeekend);
+                    }
+                }
+
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
         }
 
-        // ===================================================================
-        // TRI — TABLEAU COMPACT
-        // ===================================================================
-
-        private void PageTri(PdfDocument doc, List<TriProduction> tris)
+        private void DessinerCelluleEquipes(XGraphics gfx, double x, double y, double w, double h,
+            double[] equipes, double maxVal, bool isTotal, bool isWeekend)
         {
-            int cols = tris.Count <= 3 ? tris.Count : tris.Count <= 6 ? 3 : 4;
-            int rows = (int)Math.Ceiling(tris.Count / (double)cols);
+            XColor bg = isTotal  ? XColor.FromArgb(210, 230, 210)
+                      : isWeekend ? XColor.FromArgb(238, 238, 238)
+                      : ColBlanc;
+            gfx.DrawRectangle(new XSolidBrush(bg), x, y, w, h);
+            gfx.DrawRectangle(new XPen(XColor.FromArgb(175, 175, 175), 0.4), x, y, w, h);
 
-            var page = NouvellePageA3(doc);
-            using (var gfx = XGraphics.FromPdfPage(page))
+            double total = equipes[0] + equipes[1] + equipes[2];
+            if (total <= 0)
             {
-                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Tri — Taux d'atteinte objectif semaine par reference (EQU1/EQU2/EQU3)", ColTri);
+                gfx.DrawString("—", FTiny, XBrushes.LightGray,
+                    new XRect(x, y, w, h), XStringFormats.Center);
+                return;
+            }
 
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
+            XColor[] equColors = {
+                XColor.FromArgb(0, 105, 0),
+                XColor.FromArgb(45, 170, 45),
+                XColor.FromArgb(135, 210, 135)
+            };
+            string[] equLabels = { "EQ1", "EQ2", "EQ3" };
 
-                for (int i = 0; i < tris.Count; i++)
-                {
-                    var tr = tris[i];
-                    double equ1 = tr.LundiEqu1 + tr.MardiEqu1 + tr.MercrediEqu1 + tr.JeudiEqu1 + tr.VendrediEqu1;
-                    double equ2 = tr.LundiEqu2 + tr.MardiEqu2 + tr.MercrediEqu2 + tr.JeudiEqu2 + tr.VendrediEqu2;
-                    double equ3 = tr.LundiEqu3 + tr.MardiEqu3 + tr.MercrediEqu3 + tr.JeudiEqu3 + tr.VendrediEqu3;
-                    var model = BuildCamembertEquipes(tr.Reference + " - " + tr.AncienCode, equ1, equ2, equ3, tr.ObjectifSemaine);
-                    int col = i % cols, row = i / cols;
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 6, cH - 6);
-                }
-                DessinerNumeroPage(gfx, doc.Pages.Count);
+            double labelW  = 20;
+            double valW    = 36;
+            double barMaxW = w - labelW - valW - 6;
+            if (barMaxW < 4) barMaxW = 4;
+
+            // Nombre de lignes a afficher
+            int shown = 0;
+            bool[] show = new bool[3];
+            if (isWeekend)
+            {
+                show[0] = equipes[0] > 0;
+                shown = show[0] ? 1 : 0;
+            }
+            else
+            {
+                for (int e = 0; e < 3; e++) { show[e] = equipes[e] > 0; if (show[e]) shown++; }
+            }
+            if (shown == 0) return;
+
+            double subH = h / shown;
+            int rowIdx = 0;
+
+            for (int e = 0; e < 3; e++)
+            {
+                if (!show[e]) continue;
+                double subY = y + rowIdx * subH;
+                rowIdx++;
+
+                // Label equipe
+                string lbl = isWeekend ? "Prod" : equLabels[e];
+                gfx.DrawString(lbl, FTiny, new XSolidBrush(XColor.FromArgb(70, 70, 70)),
+                    new XRect(x + 2, subY, labelW, subH), XStringFormats.CenterLeft);
+
+                // Mini barre coloree
+                double barW = Math.Min(barMaxW, Math.Max(2, equipes[e] / maxVal * barMaxW));
+                gfx.DrawRectangle(new XSolidBrush(equColors[e]),
+                    x + labelW + 2, subY + 2, barW, subH - 4);
+
+                // Valeur numerique
+                gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
+                    new XRect(x + labelW + barMaxW + 4, subY, valW, subH),
+                    XStringFormats.CenterLeft);
             }
         }
 
-
         // ===================================================================
-        // ASSEMBLAGE MANUEL — COURBES PAR RÉFÉRENCE
+        // ASSEMBLAGE MANUEL — BARRES + CAMEMBERTS
         // ===================================================================
 
         private void PageAssManuelBarres(PdfDocument doc, List<AssManuelProduction> assManuels)
@@ -628,11 +795,7 @@ namespace AmiVanl2.Service
 
         private void PageAssManuelCamemberts(PdfDocument doc, List<AssManuelProduction> assManuels)
         {
-            var operations = assManuels
-                .OrderBy(x => x.Reference)
-                .ThenBy(x => x.Operation)
-                .ToList();
-
+            var operations = assManuels.OrderBy(x => x.Reference).ThenBy(x => x.Operation).ToList();
             if (operations.Count == 0) return;
 
             int cols = operations.Count <= 3 ? operations.Count : operations.Count <= 6 ? 3 : 4;
@@ -676,42 +839,28 @@ namespace AmiVanl2.Service
 
             var serieCap = new RectangleBarSeries
             {
-                Title = "Capuchon",
-                FillColor = OxyColor.FromRgb(40, 120, 200),
-                StrokeThickness = 0
+                Title = "Capuchon", FillColor = OxyColor.FromRgb(40, 120, 200), StrokeThickness = 0
             };
             var serieIns = new RectangleBarSeries
             {
-                Title = "Insert",
-                FillColor = OxyColor.FromRgb(200, 100, 40),
-                StrokeThickness = 0
+                Title = "Insert", FillColor = OxyColor.FromRgb(200, 100, 40), StrokeThickness = 0
             };
 
-            double lB = 0.23;
-            double gap = 0.03;
-
+            double lB = 0.23, gap = 0.03;
             for (int j = 0; j < 7; j++)
             {
-                double xCap0 = j - lB - gap / 2;
-                double xCap1 = j - gap / 2;
-                double xIns0 = j + gap / 2;
-                double xIns1 = j + lB + gap / 2;
-                serieCap.Items.Add(new RectangleBarItem(xCap0, 0, xCap1, prodCap[j]));
-                serieIns.Items.Add(new RectangleBarItem(xIns0, 0, xIns1, prodIns[j]));
+                serieCap.Items.Add(new RectangleBarItem(j - lB - gap / 2, 0, j - gap / 2, prodCap[j]));
+                serieIns.Items.Add(new RectangleBarItem(j + gap / 2, 0, j + lB + gap / 2, prodIns[j]));
             }
 
-            model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
-            {
-                Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
-                Y = objJour,
-                MinimumX = -0.5,
-                MaximumX = 4.5,
-                Color = OxyColors.DarkOrange,
-                LineStyle = LineStyle.Dash,
-                StrokeThickness = 2,
-                Text = "Obj/j: " + objJour.ToString("0"),
-                TextColor = OxyColors.DarkOrange
-            });
+            if (objJour > 0)
+                model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
+                {
+                    Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
+                    Y = objJour, MinimumX = -0.5, MaximumX = 4.5,
+                    Color = OxyColors.DarkOrange, LineStyle = LineStyle.Dash, StrokeThickness = 2,
+                    Text = "Obj/j: " + objJour.ToString("0"), TextColor = OxyColors.DarkOrange
+                });
 
             model.Axes.Add(axeX);
             model.Axes.Add(axeY);
@@ -721,7 +870,7 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // CAMEMBERT GÉNÉRIQUE (Presse / AssAuto)
+        // CAMEMBERT GENERIQUE (Presse / AssAuto)
         // ===================================================================
 
         private PlotModel BuildCamembert(string titre, double prod, double obj)
@@ -732,10 +881,8 @@ namespace AmiVanl2.Service
             var model = new PlotModel { Title = titre, Background = OxyColors.White };
             var serie = new PieSeries
             {
-                StrokeThickness     = 0,
-                InsideLabelPosition = 0.68,
-                InsideLabelFormat   = "{2:0}%",
-                OutsideLabelFormat  = ""
+                StrokeThickness = 0, InsideLabelPosition = 0.68,
+                InsideLabelFormat = "{2:0}%", OutsideLabelFormat = ""
             };
 
             serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
@@ -749,8 +896,8 @@ namespace AmiVanl2.Service
             return model;
         }
 
-        // Camembert avec répartition 3 équipes + reste vs objectif
-        private PlotModel BuildCamembertEquipes(string titre, double equ1, double equ2, double equ3, double objectifSemaine)
+        private PlotModel BuildCamembertEquipes(string titre,
+            double equ1, double equ2, double equ3, double objectifSemaine)
         {
             double totalProd = equ1 + equ2 + equ3;
             double reste     = Math.Max(0, objectifSemaine - totalProd);
@@ -758,15 +905,14 @@ namespace AmiVanl2.Service
 
             var model = new PlotModel
             {
-                Title      = titre + "\n" + pct.ToString("0") + "% — " + totalProd.ToString("0") + " / " + objectifSemaine.ToString("0"),
+                Title = titre + "\n" + pct.ToString("0") + "% — " +
+                        totalProd.ToString("0") + " / " + objectifSemaine.ToString("0"),
                 Background = OxyColors.White
             };
             var serie = new PieSeries
             {
-                StrokeThickness     = 0.5,
-                InsideLabelPosition = 0.65,
-                InsideLabelFormat   = "{2:0}%",
-                OutsideLabelFormat  = ""
+                StrokeThickness = 0.5, InsideLabelPosition = 0.65,
+                InsideLabelFormat = "{2:0}%", OutsideLabelFormat = ""
             };
 
             if (equ1 > 0) serie.Slices.Add(new PieSlice("EQU1", equ1) { Fill = OxyColor.FromRgb(0, 100, 0) });
@@ -781,7 +927,7 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // LÉGENDE COULEURS (partagée barres et tableaux)
+        // LEGENDE + GETTERS PRODUCTION
         // ===================================================================
 
         private void DessinerLegendeCouleurs(XGraphics gfx, double y)
@@ -800,23 +946,10 @@ namespace AmiVanl2.Service
                 new XRect(x + 15, y, 70, 12), XStringFormats.CenterLeft);
         }
 
-        // ===================================================================
-        // GETTERS PRODUCTION
-        // ===================================================================
-
-        private double ProdJourPresse(PresseProduction p, int j) =>
-            j == 0 ? p.ProdLundi   : j == 1 ? p.ProdMardi    : j == 2 ? p.ProdMercredi :
-            j == 3 ? p.ProdJeudi   : j == 4 ? p.ProdVendredi : j == 5 ? p.ProdSamedi   : p.ProdDimanche;
-
-        private double ProdJourAssAuto(AssAutoProduction a, int j) =>
-            j == 0 ? a.ProdLundi   : j == 1 ? a.ProdMardi    : j == 2 ? a.ProdMercredi :
-            j == 3 ? a.ProdJeudi   : j == 4 ? a.ProdVendredi : j == 5 ? a.ProdSamedi   : a.ProdDimanche;
-
         private double[] ProdJoursAssManu(AssManuelProduction op)
         {
             if (op == null) return new double[7];
-            return new double[]
-            {
+            return new double[] {
                 op.LundiEqu1    + op.LundiEqu2    + op.LundiEqu3,
                 op.MardiEqu1    + op.MardiEqu2    + op.MardiEqu3,
                 op.MercrediEqu1 + op.MercrediEqu2 + op.MercrediEqu3,
