@@ -537,13 +537,15 @@ namespace AmiVanl2.Service
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
                 DessinerEnTete(gfx, titre, couleur);
 
-                double x0        = Marge;
-                double y0        = HeaderH + 4;
-                double tableW    = W - 2 * Marge;
-                double colRefW   = 108;
-                double colDataW  = (tableW - colRefW) / 8.0;
+                double x0         = Marge;
+                double y0         = HeaderH + 4;
+                double tableW     = W - 2 * Marge;
+                double colRefW    = 108;
+                // Colonne TOTAL plus large pour les labels camembert
+                double colTotalW  = (tableW - colRefW) * 0.20;
+                double colDayW    = (tableW - colRefW - colTotalW) / 7.0;
                 double headerRowH = 26;
-                double dataRowH  = (H - y0 - Marge - headerRowH) / lignes.Count;
+                double dataRowH   = (H - y0 - Marge - headerRowH) / lignes.Count;
 
                 // En-tete colonnes
                 XColor hBg = XColor.FromArgb(
@@ -557,8 +559,10 @@ namespace AmiVanl2.Service
                 string[] dayHeaders = lignes[0].DayLabels.Concat(new[] { "TOTAL" }).ToArray();
                 for (int d = 0; d < 8; d++)
                 {
-                    XColor bg = d == 7 ? hBgTotal : hBg;
-                    DessinerCellule(gfx, x0 + colRefW + d * colDataW, y0, colDataW, headerRowH,
+                    double cw  = d == 7 ? colTotalW : colDayW;
+                    double cx0 = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
+                    XColor bg  = d == 7 ? hBgTotal : hBg;
+                    DessinerCellule(gfx, cx0, y0, cw, headerRowH,
                         dayHeaders[d], FTiny, new XSolidBrush(bg), true);
                 }
 
@@ -597,11 +601,10 @@ namespace AmiVanl2.Service
                     // Cellules journalieres
                     for (int d = 0; d < 8; d++)
                     {
-                        double cx = x0 + colRefW + d * colDataW;
-                        bool isTotal   = d == 7;
-                        bool isWeekend = d == 5 || d == 6;
-                        DessinerCelluleEquipes(gfx, cx, ry, colDataW, dataRowH,
-                            ligne.DayEquipes[d], maxVal, isTotal, isWeekend, ligne.ObjSemaine);
+                        double cw = d == 7 ? colTotalW : colDayW;
+                        double cx = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
+                        DessinerCelluleEquipes(gfx, cx, ry, cw, dataRowH,
+                            ligne.DayEquipes[d], maxVal, d == 7, d == 5 || d == 6, ligne.ObjSemaine);
                     }
                 }
 
@@ -731,7 +734,7 @@ namespace AmiVanl2.Service
                 double tableW     = W - 2 * Marge;
                 double colRefW    = 105;
                 // Colonne TOTAL plus large pour que les labels exterieurs soient visibles
-                double colTotalW  = (tableW - colRefW) * 0.19;
+                double colTotalW  = (tableW - colRefW) * 0.22;
                 double colDayW    = (tableW - colRefW - colTotalW) / 7.0;
                 double headerRowH = 26;
                 double dataRowH   = (H - y0 - Marge - headerRowH) / totalRows;
