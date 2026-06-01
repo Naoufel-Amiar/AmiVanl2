@@ -111,8 +111,7 @@ namespace AmiVanl2.Service
             if (assManuels.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
-                PageAssManuelBarres(doc, assManuels);
-                PageAssManuelCamemberts(doc, assManuels);
+                PageAssManuelTable(doc, assManuels);
             }
 
             doc.Save(cheminPdf);
@@ -702,128 +701,149 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // ASSEMBLAGE MANUEL — BARRES + CAMEMBERTS
+        // ASSEMBLAGE MANUEL — TABLEAU PAR EQUIPE ET PAR OPERATION
         // ===================================================================
 
-        private void PageAssManuelBarres(PdfDocument doc, List<AssManuelProduction> assManuels)
+        private void PageAssManuelTable(PdfDocument doc, List<AssManuelProduction> assManuels)
         {
-            var references = assManuels.Select(x => x.Reference).Distinct().ToList();
-            int cols = references.Count == 1 ? 1 : references.Count <= 4 ? 2 : 3;
-            int rows = (int)Math.Ceiling(references.Count / (double)cols);
+            if (assManuels.Count == 0) return;
+
+            // Groupe par reference, puis tri par operation dans chaque groupe
+            var refs = assManuels
+                .GroupBy(m => m.Reference)
+                .Select(g => g.OrderBy(m => m.Operation ?? "").ToList())
+                .ToList();
+
+            int totalRows = refs.Sum(g => g.Count);
 
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Manuel — Production journaliere par operation (Capuchon / Insert)", ColAssManuel);
+                DessinerEnTete(gfx, "Assemblage Manuel — Suivi journalier par equipe et par operation", ColAssManuel);
 
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
+                double x0        = Marge;
+                double y0        = HeaderH + 4;
+                double tableW    = W - 2 * Marge;
+                double colRefW   = 115;
+                double colDataW  = (tableW - colRefW) / 8.0;
+                double headerRowH = 26;
+                double dataRowH  = (H - y0 - Marge - headerRowH) / totalRows;
 
-                for (int i = 0; i < references.Count; i++)
+                // En-tete colonnes
+                XColor hBg = XColor.FromArgb(
+                    (int)(ColAssManuel.R * 0.78), (int)(ColAssManuel.G * 0.78), (int)(ColAssManuel.B * 0.78));
+                XColor hBgTotal = XColor.FromArgb(
+                    (int)(ColAssManuel.R * 0.65), (int)(ColAssManuel.G * 0.65), (int)(ColAssManuel.B * 0.65));
+
+                DessinerCellule(gfx, x0, y0, colRefW, headerRowH,
+                    "Ref / Op / Objectif", FTiny, new XSolidBrush(hBg), true);
+
+                var firstOp = assManuels.First();
+                string[] dayHeaders = new[] {
+                    firstOp.LabelLundi, firstOp.LabelMardi, firstOp.LabelMercredi,
+                    firstOp.LabelJeudi, firstOp.LabelVendredi, firstOp.LabelSamedi,
+                    firstOp.LabelDimanche, "TOTAL"
+                };
+                for (int d = 0; d < 8; d++)
                 {
-                    string reference = references[i];
-                    int col = i % cols, row = i / cols;
+                    XColor bg = d == 7 ? hBgTotal : hBg;
+                    DessinerCellule(gfx, x0 + colRefW + d * colDataW, y0, colDataW, headerRowH,
+                        dayHeaders[d], FTiny, new XSolidBrush(bg), true);
+                }
 
-                    var capuchon = assManuels.FirstOrDefault(x =>
-                        x.Reference == reference && x.Operation.ToLower().Contains("capuchon"));
-                    var insert = assManuels.FirstOrDefault(x =>
-                        x.Reference == reference && x.Operation.ToLower().Contains("insert"));
-
-                    if (capuchon == null && insert == null) continue;
-
-                    AssManuelProduction refObj = capuchon ?? insert;
-                    string[] jourLabels = {
-                        refObj.LabelLundi, refObj.LabelMardi, refObj.LabelMercredi,
-                        refObj.LabelJeudi, refObj.LabelVendredi, refObj.LabelSamedi, refObj.LabelDimanche
+                // Echelle barres : max equipe sur tous les jours
+                double maxVal = 1;
+                foreach (var m in assManuels)
+                {
+                    double[] vals = {
+                        m.LundiEqu1, m.LundiEqu2, m.LundiEqu3,
+                        m.MardiEqu1, m.MardiEqu2, m.MardiEqu3,
+                        m.MercrediEqu1, m.MercrediEqu2, m.MercrediEqu3,
+                        m.JeudiEqu1, m.JeudiEqu2, m.JeudiEqu3,
+                        m.VendrediEqu1, m.VendrediEqu2, m.VendrediEqu3
                     };
-
-                    double objJour = (capuchon?.ObjectifSemaine ?? insert.ObjectifSemaine) / 5.0;
-                    double[] prodCap = ProdJoursAssManu(capuchon);
-                    double[] prodIns = ProdJoursAssManu(insert);
-
-                    var model = BuildBarresAssManuel(reference, jourLabels, prodCap, prodIns, objJour);
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
+                    foreach (var v in vals) if (v > maxVal) maxVal = v;
                 }
+
+                XColor refBg = XColor.FromArgb(
+                    Math.Min(255, (int)(ColAssManuel.R * 0.94) + 8),
+                    Math.Min(255, (int)(ColAssManuel.G * 0.94) + 8),
+                    Math.Min(255, (int)(ColAssManuel.B * 0.94) + 8));
+
+                int rowIdx = 0;
+                foreach (var ops in refs)
+                {
+                    int opCount = ops.Count;
+                    double refH = opCount * dataRowH;
+                    double ry   = y0 + headerRowH + rowIdx * dataRowH;
+
+                    // Cellule reference (fusion des lignes operations)
+                    gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, refH);
+                    gfx.DrawRectangle(new XPen(XColor.FromArgb(140, 140, 140), 0.6), x0, ry, colRefW, refH);
+
+                    // Ref + AncienCode en haut
+                    var op0 = ops[0];
+                    gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
+                        new XRect(x0 + 3, ry + 2, colRefW - 6, dataRowH * 0.45), XStringFormats.CenterLeft);
+                    gfx.DrawString(op0.AncienCode, FTiny, new XSolidBrush(XColor.FromArgb(60, 60, 60)),
+                        new XRect(x0 + 3, ry + dataRowH * 0.45, colRefW - 6, dataRowH * 0.35), XStringFormats.CenterLeft);
+
+                    // Lignes par operation
+                    for (int opIdx = 0; opIdx < opCount; opIdx++)
+                    {
+                        var op  = ops[opIdx];
+                        double opY = ry + opIdx * dataRowH;
+
+                        // Nom operation dans la partie basse de la cellule ref
+                        string opLabel = string.IsNullOrWhiteSpace(op.Operation)
+                            ? "Op " + (opIdx + 1)
+                            : op.Operation;
+                        gfx.DrawString(opLabel + "  Obj: " + op.ObjectifSemaine.ToString("0"),
+                            FTiny, new XSolidBrush(XColor.FromArgb(100, 60, 120)),
+                            new XRect(x0 + 3, opY + dataRowH * 0.72, colRefW - 6, dataRowH * 0.28),
+                            XStringFormats.CenterLeft);
+
+                        // Separateur entre operations
+                        if (opIdx > 0)
+                            gfx.DrawLine(new XPen(XColor.FromArgb(130, 130, 130), 0.4),
+                                x0 + colRefW, opY, x0 + tableW, opY);
+
+                        // Construire DayEquipes[8][3]
+                        double[][] dayEquipes = {
+                            new[] { op.LundiEqu1,    op.LundiEqu2,    op.LundiEqu3    },
+                            new[] { op.MardiEqu1,    op.MardiEqu2,    op.MardiEqu3    },
+                            new[] { op.MercrediEqu1, op.MercrediEqu2, op.MercrediEqu3 },
+                            new[] { op.JeudiEqu1,    op.JeudiEqu2,    op.JeudiEqu3    },
+                            new[] { op.VendrediEqu1, op.VendrediEqu2, op.VendrediEqu3 },
+                            new[] { op.ProdSamedi,   0.0,             0.0             },
+                            new[] { op.ProdDimanche, 0.0,             0.0             },
+                            new[] {
+                                op.LundiEqu1+op.MardiEqu1+op.MercrediEqu1+op.JeudiEqu1+op.VendrediEqu1,
+                                op.LundiEqu2+op.MardiEqu2+op.MercrediEqu2+op.JeudiEqu2+op.VendrediEqu2,
+                                op.LundiEqu3+op.MardiEqu3+op.MercrediEqu3+op.JeudiEqu3+op.VendrediEqu3
+                            }
+                        };
+
+                        for (int d = 0; d < 8; d++)
+                        {
+                            double cx = x0 + colRefW + d * colDataW;
+                            DessinerCelluleEquipes(gfx, cx, opY, colDataW, dataRowH,
+                                dayEquipes[d], maxVal,
+                                isTotal: d == 7,
+                                isWeekend: d == 5 || d == 6,
+                                objSemaine: op.ObjectifSemaine);
+                        }
+                    }
+
+                    // Bordure exterieure du groupe reference
+                    gfx.DrawRectangle(new XPen(XColor.FromArgb(110, 80, 130), 1.0), x0, ry, tableW, refH);
+
+                    rowIdx += opCount;
+                }
+
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
-        }
-
-        private void PageAssManuelCamemberts(PdfDocument doc, List<AssManuelProduction> assManuels)
-        {
-            var operations = assManuels.OrderBy(x => x.Reference).ThenBy(x => x.Operation).ToList();
-            if (operations.Count == 0) return;
-
-            int cols = operations.Count <= 3 ? operations.Count : operations.Count <= 6 ? 3 : 4;
-            int rows = (int)Math.Ceiling(operations.Count / (double)cols);
-
-            var page = NouvellePageA3(doc);
-            using (var gfx = XGraphics.FromPdfPage(page))
-            {
-                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Manuel — Repartition par equipe (EQU1/EQU2/EQU3)", ColAssManuel);
-
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
-
-                for (int i = 0; i < operations.Count; i++)
-                {
-                    var op = operations[i];
-                    int col = i % cols, row = i / cols;
-
-                    double equ1 = op.LundiEqu1 + op.MardiEqu1 + op.MercrediEqu1 + op.JeudiEqu1 + op.VendrediEqu1;
-                    double equ2 = op.LundiEqu2 + op.MardiEqu2 + op.MercrediEqu2 + op.JeudiEqu2 + op.VendrediEqu2;
-                    double equ3 = op.LundiEqu3 + op.MardiEqu3 + op.MercrediEqu3 + op.JeudiEqu3 + op.VendrediEqu3;
-                    string titre = op.Reference + " - " + op.Operation;
-
-                    var model = BuildCamembertEquipes(titre, equ1, equ2, equ3, op.ObjectifSemaine);
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
-                }
-                DessinerNumeroPage(gfx, doc.Pages.Count);
-            }
-        }
-
-        private PlotModel BuildBarresAssManuel(string reference, string[] jourLabels,
-            double[] prodCap, double[] prodIns, double objJour)
-        {
-            var model = new PlotModel { Title = reference, Background = OxyColors.White };
-
-            var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
-            foreach (var l in jourLabels) axeX.Labels.Add(l);
-            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
-
-            var serieCap = new RectangleBarSeries
-            {
-                Title = "Capuchon", FillColor = OxyColor.FromRgb(40, 120, 200), StrokeThickness = 0
-            };
-            var serieIns = new RectangleBarSeries
-            {
-                Title = "Insert", FillColor = OxyColor.FromRgb(200, 100, 40), StrokeThickness = 0
-            };
-
-            double lB = 0.23, gap = 0.03;
-            for (int j = 0; j < 7; j++)
-            {
-                serieCap.Items.Add(new RectangleBarItem(j - lB - gap / 2, 0, j - gap / 2, prodCap[j]));
-                serieIns.Items.Add(new RectangleBarItem(j + gap / 2, 0, j + lB + gap / 2, prodIns[j]));
-            }
-
-            if (objJour > 0)
-                model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
-                {
-                    Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
-                    Y = objJour, MinimumX = -0.5, MaximumX = 4.5,
-                    Color = OxyColors.DarkOrange, LineStyle = LineStyle.Dash, StrokeThickness = 2,
-                    Text = "Obj/j: " + objJour.ToString("0"), TextColor = OxyColors.DarkOrange
-                });
-
-            model.Axes.Add(axeX);
-            model.Axes.Add(axeY);
-            model.Series.Add(serieCap);
-            model.Series.Add(serieIns);
-            return model;
         }
 
         // ===================================================================
@@ -853,36 +873,6 @@ namespace AmiVanl2.Service
             return model;
         }
 
-        private PlotModel BuildCamembertEquipes(string titre,
-            double equ1, double equ2, double equ3, double objectifSemaine)
-        {
-            double totalProd = equ1 + equ2 + equ3;
-            double reste     = Math.Max(0, objectifSemaine - totalProd);
-            double pct       = objectifSemaine > 0 ? totalProd / objectifSemaine * 100 : 0;
-
-            var model = new PlotModel
-            {
-                Title = titre + "\n" + pct.ToString("0") + "% — " +
-                        totalProd.ToString("0") + " / " + objectifSemaine.ToString("0"),
-                Background = OxyColors.White
-            };
-            var serie = new PieSeries
-            {
-                StrokeThickness = 0.5, InsideLabelPosition = 0.65,
-                InsideLabelFormat = "{2:0}%", OutsideLabelFormat = ""
-            };
-
-            if (equ1 > 0) serie.Slices.Add(new PieSlice("EQU1", equ1) { Fill = OxyColor.FromRgb(0, 100, 0) });
-            if (equ2 > 0) serie.Slices.Add(new PieSlice("EQU2", equ2) { Fill = OxyColor.FromRgb(0, 160, 0) });
-            if (equ3 > 0) serie.Slices.Add(new PieSlice("EQU3", equ3) { Fill = OxyColor.FromRgb(100, 210, 100) });
-            if (reste > 0) serie.Slices.Add(new PieSlice("Reste", reste) { Fill = OxyColor.FromRgb(210, 60, 60) });
-            if (totalProd == 0 && reste == 0)
-                serie.Slices.Add(new PieSlice("Aucune prod", 1) { Fill = OxyColor.FromRgb(200, 200, 200) });
-
-            model.Series.Add(serie);
-            return model;
-        }
-
         // ===================================================================
         // LEGENDE + GETTERS PRODUCTION
         // ===================================================================
@@ -903,18 +893,5 @@ namespace AmiVanl2.Service
                 new XRect(x + 15, y, 70, 12), XStringFormats.CenterLeft);
         }
 
-        private double[] ProdJoursAssManu(AssManuelProduction op)
-        {
-            if (op == null) return new double[7];
-            return new double[] {
-                op.LundiEqu1    + op.LundiEqu2    + op.LundiEqu3,
-                op.MardiEqu1    + op.MardiEqu2    + op.MardiEqu3,
-                op.MercrediEqu1 + op.MercrediEqu2 + op.MercrediEqu3,
-                op.JeudiEqu1    + op.JeudiEqu2    + op.JeudiEqu3,
-                op.VendrediEqu1 + op.VendrediEqu2 + op.VendrediEqu3,
-                op.ProdSamedi,
-                op.ProdDimanche
-            };
-        }
     }
 }
