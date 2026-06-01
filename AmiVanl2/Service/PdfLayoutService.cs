@@ -876,25 +876,24 @@ namespace AmiVanl2.Service
         {
             double reste = Math.Max(0, obj - prod);
 
-            var model = new PlotModel
-            {
-                Title           = titre,
-                Subtitle        = prod.ToString("0") + " / " + obj.ToString("0") + " pcs",
-                SubtitleFontSize = 9,
-                Background      = OxyColors.White
-            };
+            var model = new PlotModel { Title = titre, Background = OxyColors.White };
             var serie = new PieSeries
             {
-                StrokeThickness = 0, InsideLabelPosition = 0.68,
-                InsideLabelFormat = "{2:0}%", OutsideLabelFormat = ""
+                StrokeThickness     = 0,
+                InsideLabelPosition = 0.6,
+                InsideLabelFormat   = "{2:0}%",  // % a l'interieur de la part
+                OutsideLabelFormat  = "{0}",      // valeur reelle a l'exterieur (prise sur le label de la part)
+                LabelMargin         = 4,
+                FontSize            = 8
             };
 
-            // Vert = ce qui est fait, rouge = ce qui reste a faire
+            // Vert = ce qui est fait ; label = valeur => affiche "14950 pcs" a cote
             if (prod > 0)
                 serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
                     { Fill = OxyColor.FromRgb(40, 160, 80) });
+            // Rouge = reste ; label vide => rien affiche a cote de la part rouge
             if (reste > 0)
-                serie.Slices.Add(new PieSlice("Reste", reste)
+                serie.Slices.Add(new PieSlice("", reste)
                     { Fill = OxyColor.FromRgb(210, 60, 60) });
             if (prod <= 0 && reste <= 0)
                 serie.Slices.Add(new PieSlice("Aucune donnee", 1)
