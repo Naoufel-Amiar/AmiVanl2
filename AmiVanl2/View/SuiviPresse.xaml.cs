@@ -22,8 +22,12 @@ namespace AmiVanl2.View
             if (AppData.Presses == null || AppData.Presses.Count == 0)
                 return;
 
-            List<PresseProduction> groupe1 = AppData.Presses.Take(4).ToList();
-            List<PresseProduction> groupe2 = AppData.Presses.Skip(4).Take(4).ToList();
+            var refsDistinctes = AppData.Presses
+                .GroupBy(p => new { p.Reference, p.Machine })
+                .Select(g => g.First()).ToList();
+            int moitie = (refsDistinctes.Count + 1) / 2;
+            List<PresseProduction> groupe1 = refsDistinctes.Take(moitie).ToList();
+            List<PresseProduction> groupe2 = refsDistinctes.Skip(moitie).ToList();
 
             ChargerGraphiqueGroupe(groupe1, PlotPresseGroupe1, LegendPresseGroupe1, "Production presse — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotPresseGroupe2, LegendPresseGroupe2, "Production presse — Groupe 2");

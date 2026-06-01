@@ -10,8 +10,6 @@ namespace AmiVanl2
 {
     public partial class MainWindow : Window
     {
-        private string selectedFilePath = "";
-
         public MainWindow()
         {
             InitializeComponent();

@@ -22,8 +22,12 @@ namespace AmiVanl2.View
             if (AppData.AssAutos == null || AppData.AssAutos.Count == 0)
                 return;
 
-            List<AssAutoProduction> groupe1 = AppData.AssAutos.Take(4).ToList();
-            List<AssAutoProduction> groupe2 = AppData.AssAutos.Skip(4).Take(4).ToList();
+            var refsDistinctes = AppData.AssAutos
+                .GroupBy(p => new { p.Reference, p.Machine })
+                .Select(g => g.First()).ToList();
+            int moitie = (refsDistinctes.Count + 1) / 2;
+            List<AssAutoProduction> groupe1 = refsDistinctes.Take(moitie).ToList();
+            List<AssAutoProduction> groupe2 = refsDistinctes.Skip(moitie).ToList();
 
             ChargerGraphiqueGroupe(groupe1, PlotAssAutoGroupe1, LegendAssAutoGroupe1, "Assemblage automatique — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotAssAutoGroupe2, LegendAssAutoGroupe2, "Assemblage automatique — Groupe 2");

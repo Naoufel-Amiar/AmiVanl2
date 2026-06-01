@@ -25,7 +25,6 @@ namespace AmiVanl2.View
     /// </summary>
     public partial class AccImport : UserControl
     {
-        private string selectedFilePath = "";
         public AccImport()
         {
             InitializeComponent();
@@ -97,8 +96,6 @@ namespace AmiVanl2.View
 
             AppData.Reset();
 
-            selectedFilePath = filePath;
-
             AppData.ExcelFilePath = filePath;
 
             MainWindow fenetre = Application.Current.MainWindow as MainWindow;
@@ -113,21 +110,6 @@ namespace AmiVanl2.View
 
             DropZone.BorderBrush =
                 Brushes.Green;
-        }
-
-        private void TxtObjectifProduction_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(
-                TxtObjectifProduction.Text))
-            {
-                PlaceholderObjectif.Visibility =
-                    Visibility.Visible;
-            }
-            else
-            {
-                PlaceholderObjectif.Visibility =
-                    Visibility.Collapsed;
-            }
         }
 
         private async void BtnGenerate_Click(object sender, RoutedEventArgs e)
@@ -215,9 +197,11 @@ namespace AmiVanl2.View
 
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    ex.Message
-                );
+                string msg = ex.Message.Contains("used by another process")
+                    || ex.Message.Contains("en cours d'utilisation")
+                    ? "Impossible de lire le fichier.\nFermez-le dans Excel puis réessayez."
+                    : ex.Message;
+                MessageBox.Show(msg);
             }
         }
     }

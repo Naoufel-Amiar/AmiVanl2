@@ -49,7 +49,6 @@ namespace AmiVanl2.View
                     ProdSamedi = g.Sum(x => x.ProdSamedi),
                     ProdDimanche = g.Sum(x => x.ProdDimanche)
                 })
-                .Take(8)
                 .ToList();
 
             foreach (AssAutoProduction assAuto in assAutos)
