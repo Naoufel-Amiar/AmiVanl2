@@ -99,7 +99,8 @@ namespace AmiVanl2.Service
             if (assManuels.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
-                PageAssManuel(doc, assManuels);
+                PageAssManuelBarres(doc, assManuels);
+                PageAssManuelCamemberts(doc, assManuels);
             }
 
             doc.Save(cheminPdf);
@@ -580,104 +581,142 @@ namespace AmiVanl2.Service
         // ASSEMBLAGE MANUEL — COURBES PAR RÉFÉRENCE
         // ===================================================================
 
-        private void PageAssManuel(PdfDocument doc, List<AssManuelProduction> assManuels)
+        private void PageAssManuelBarres(PdfDocument doc, List<AssManuelProduction> assManuels)
         {
-            var references = assManuels
-                .Select(x => x.Reference)
-                .Distinct()
-                .ToList();
+            var references = assManuels.Select(x => x.Reference).Distinct().ToList();
+            int cols = references.Count == 1 ? 1 : references.Count <= 4 ? 2 : 3;
+            int rows = (int)Math.Ceiling(references.Count / (double)cols);
 
-            int cols = references.Count <= 2 ? references.Count :
-                       references.Count <= 4 ? 2 : 3;
-            int refsParPage = cols * 2;
-
-            for (int debut = 0; debut < references.Count; debut += refsParPage)
+            var page = NouvellePageA3(doc);
+            using (var gfx = XGraphics.FromPdfPage(page))
             {
-                var refPage = references.Skip(debut).Take(refsParPage).ToList();
-                int lignes  = (int)Math.Ceiling(refPage.Count / (double)cols);
+                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
+                DessinerEnTete(gfx, "Assemblage Manuel — Production journaliere par operation (Capuchon / Insert)", ColAssManuel);
 
-                var page = NouvellePageA3(doc);
-                using (var gfx = XGraphics.FromPdfPage(page))
+                double y0 = HeaderH + Marge;
+                double cH = (H - y0 - Marge) / rows;
+                double cW = (W - 2 * Marge) / cols;
+
+                for (int i = 0; i < references.Count; i++)
                 {
-                    gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                    DessinerEnTete(gfx, "Assemblage Manuel — Production par reference (Capuchon / Insert / Objectif)", ColAssManuel);
+                    string reference = references[i];
+                    int col = i % cols, row = i / cols;
 
-                    double y0 = HeaderH + Marge;
-                    double cH = (H - y0 - Marge) / lignes;
-                    double cW = (W - 2 * Marge) / cols;
+                    var capuchon = assManuels.FirstOrDefault(x =>
+                        x.Reference == reference && x.Operation.ToLower().Contains("capuchon"));
+                    var insert = assManuels.FirstOrDefault(x =>
+                        x.Reference == reference && x.Operation.ToLower().Contains("insert"));
 
-                    for (int i = 0; i < refPage.Count; i++)
-                    {
-                        string reference = refPage[i];
-                        int col = i % cols, row = i / cols;
+                    if (capuchon == null && insert == null) continue;
 
-                        var capuchon = assManuels.FirstOrDefault(x =>
-                            x.Reference == reference && x.Operation.ToLower().Contains("capuchon"));
-                        var insert = assManuels.FirstOrDefault(x =>
-                            x.Reference == reference && x.Operation.ToLower().Contains("insert"));
+                    AssManuelProduction refObj = capuchon ?? insert;
+                    string[] jourLabels = {
+                        refObj.LabelLundi, refObj.LabelMardi, refObj.LabelMercredi,
+                        refObj.LabelJeudi, refObj.LabelVendredi, refObj.LabelSamedi, refObj.LabelDimanche
+                    };
 
-                        if (capuchon == null && insert == null) continue;
+                    double objJour = (capuchon?.ObjectifSemaine ?? insert.ObjectifSemaine) / 5.0;
+                    double[] prodCap = ProdJoursAssManu(capuchon);
+                    double[] prodIns = ProdJoursAssManu(insert);
 
-                        double objSemaine = capuchon?.ObjectifSemaine ?? insert.ObjectifSemaine;
-                        double[] prodCap  = ProdJoursAssManu(capuchon);
-                        double[] prodIns  = ProdJoursAssManu(insert);
-
-                        var model = BuildGraphiqueAssManuel(reference, prodCap, prodIns, objSemaine / 5.0);
-                        PlacerGraphique(gfx, model,
-                            Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
-                    }
-                    DessinerNumeroPage(gfx, doc.Pages.Count);
+                    var model = BuildBarresAssManuel(reference, jourLabels, prodCap, prodIns, objJour);
+                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
                 }
+                DessinerNumeroPage(gfx, doc.Pages.Count);
             }
         }
 
-        private PlotModel BuildGraphiqueAssManuel(string reference, double[] prodCap, double[] prodIns, double objJour)
+        private void PageAssManuelCamemberts(PdfDocument doc, List<AssManuelProduction> assManuels)
+        {
+            var operations = assManuels
+                .OrderBy(x => x.Reference)
+                .ThenBy(x => x.Operation)
+                .ToList();
+
+            if (operations.Count == 0) return;
+
+            int cols = operations.Count <= 3 ? operations.Count : operations.Count <= 6 ? 3 : 4;
+            int rows = (int)Math.Ceiling(operations.Count / (double)cols);
+
+            var page = NouvellePageA3(doc);
+            using (var gfx = XGraphics.FromPdfPage(page))
+            {
+                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
+                DessinerEnTete(gfx, "Assemblage Manuel — Repartition par equipe (EQU1/EQU2/EQU3)", ColAssManuel);
+
+                double y0 = HeaderH + Marge;
+                double cH = (H - y0 - Marge) / rows;
+                double cW = (W - 2 * Marge) / cols;
+
+                for (int i = 0; i < operations.Count; i++)
+                {
+                    var op = operations[i];
+                    int col = i % cols, row = i / cols;
+
+                    double equ1 = op.LundiEqu1 + op.MardiEqu1 + op.MercrediEqu1 + op.JeudiEqu1 + op.VendrediEqu1;
+                    double equ2 = op.LundiEqu2 + op.MardiEqu2 + op.MercrediEqu2 + op.JeudiEqu2 + op.VendrediEqu2;
+                    double equ3 = op.LundiEqu3 + op.MardiEqu3 + op.MercrediEqu3 + op.JeudiEqu3 + op.VendrediEqu3;
+                    string titre = op.Reference + " - " + op.Operation;
+
+                    var model = BuildCamembertEquipes(titre, equ1, equ2, equ3, op.ObjectifSemaine);
+                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
+                }
+                DessinerNumeroPage(gfx, doc.Pages.Count);
+            }
+        }
+
+        private PlotModel BuildBarresAssManuel(string reference, string[] jourLabels,
+            double[] prodCap, double[] prodIns, double objJour)
         {
             var model = new PlotModel { Title = reference, Background = OxyColors.White };
 
             var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
-            foreach (var j in new[] { "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim" })
-                axeX.Labels.Add(j);
-
+            foreach (var l in jourLabels) axeX.Labels.Add(l);
             var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
 
-            var serCap = new LineSeries
+            var serieCap = new RectangleBarSeries
             {
-                Title           = "Capuchon",
-                StrokeThickness = 2,
-                MarkerType      = MarkerType.Circle,
-                Color           = OxyColor.FromRgb(40, 120, 200)
+                Title = "Capuchon",
+                FillColor = OxyColor.FromRgb(40, 120, 200),
+                StrokeThickness = 0
             };
-            var serIns = new LineSeries
+            var serieIns = new RectangleBarSeries
             {
-                Title           = "Insert",
-                StrokeThickness = 2,
-                MarkerType      = MarkerType.Square,
-                Color           = OxyColor.FromRgb(200, 100, 40)
-            };
-            var serObj = new LineSeries
-            {
-                Title           = "Objectif jour",
-                StrokeThickness = 2,
-                MarkerType      = MarkerType.Diamond,
-                Color           = OxyColors.Orange,
-                LineStyle       = LineStyle.Dash
+                Title = "Insert",
+                FillColor = OxyColor.FromRgb(200, 100, 40),
+                StrokeThickness = 0
             };
 
-            for (int i = 0; i < 7; i++)
+            double lB = 0.23;
+            double gap = 0.03;
+
+            for (int j = 0; j < 7; j++)
             {
-                serCap.Points.Add(new DataPoint(i, prodCap[i]));
-                serIns.Points.Add(new DataPoint(i, prodIns[i]));
-                // Objectif uniquement Lun-Ven (pas de cible weekend)
-                if (i <= 4)
-                    serObj.Points.Add(new DataPoint(i, objJour));
+                double xCap0 = j - lB - gap / 2;
+                double xCap1 = j - gap / 2;
+                double xIns0 = j + gap / 2;
+                double xIns1 = j + lB + gap / 2;
+                serieCap.Items.Add(new RectangleBarItem(xCap0, 0, xCap1, prodCap[j]));
+                serieIns.Items.Add(new RectangleBarItem(xIns0, 0, xIns1, prodIns[j]));
             }
+
+            model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
+            {
+                Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
+                Y = objJour,
+                MinimumX = -0.5,
+                MaximumX = 4.5,
+                Color = OxyColors.DarkOrange,
+                LineStyle = LineStyle.Dash,
+                StrokeThickness = 2,
+                Text = "Obj/j: " + objJour.ToString("0"),
+                TextColor = OxyColors.DarkOrange
+            });
 
             model.Axes.Add(axeX);
             model.Axes.Add(axeY);
-            model.Series.Add(serCap);
-            model.Series.Add(serIns);
-            model.Series.Add(serObj);
+            model.Series.Add(serieCap);
+            model.Series.Add(serieIns);
             return model;
         }
 
