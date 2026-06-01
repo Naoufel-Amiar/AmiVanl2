@@ -12,6 +12,7 @@ namespace AmiVanl2.View
     public partial class SuiviTri : UserControl
     {
         private TriController triController;
+        private Button _boutonSelectionne;
 
         public SuiviTri()
         {
@@ -29,10 +30,14 @@ namespace AmiVanl2.View
                 await triController.ChargerTrisAsync();
             }
 
-            ListeReferences.ItemsSource = AppData.Tris;
+            var refsAvecProd = AppData.Tris
+                .Where(t => t.TotalProduction > 0)
+                .ToList();
+
+            ListeReferences.ItemsSource = refsAvecProd;
 
             TriProduction premiereReference =
-                AppData.Tris.FirstOrDefault();
+                refsAvecProd.FirstOrDefault() ?? AppData.Tris.FirstOrDefault();
 
             if (premiereReference == null)
             {
@@ -45,21 +50,22 @@ namespace AmiVanl2.View
 
         private void BtnReference_Click(object sender, RoutedEventArgs e)
         {
-            Button bouton =
-                sender as Button;
+            Button bouton = sender as Button;
+            if (bouton == null) return;
 
-            if (bouton == null)
-            {
-                return;
-            }
+            TriProduction tri = bouton.Tag as TriProduction;
+            if (tri == null) return;
 
-            TriProduction tri =
-                bouton.Tag as TriProduction;
+            if (_boutonSelectionne != null)
+                _boutonSelectionne.Tag = _boutonSelectionne.Tag; // force refresh via trigger
 
-            if (tri == null)
-            {
-                return;
-            }
+            // reset ancien bouton
+            if (_boutonSelectionne != null)
+                _boutonSelectionne.Background = System.Windows.Media.Brushes.Transparent;
+
+            bouton.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(37, 99, 235));
+            _boutonSelectionne = bouton;
 
             ChargerReference(tri);
         }

@@ -59,9 +59,24 @@ namespace AmiVanl2.View
                         && x.Operation.ToLower().Contains("insert"));
 
                 if (capuchon == null && insert == null)
-                {
                     continue;
-                }
+
+                double totalProd = 0;
+                if (capuchon != null)
+                    totalProd += capuchon.LundiEqu1 + capuchon.LundiEqu2 + capuchon.LundiEqu3
+                               + capuchon.MardiEqu1 + capuchon.MardiEqu2 + capuchon.MardiEqu3
+                               + capuchon.MercrediEqu1 + capuchon.MercrediEqu2 + capuchon.MercrediEqu3
+                               + capuchon.JeudiEqu1 + capuchon.JeudiEqu2 + capuchon.JeudiEqu3
+                               + capuchon.VendrediEqu1 + capuchon.VendrediEqu2 + capuchon.VendrediEqu3;
+                if (insert != null)
+                    totalProd += insert.LundiEqu1 + insert.LundiEqu2 + insert.LundiEqu3
+                               + insert.MardiEqu1 + insert.MardiEqu2 + insert.MardiEqu3
+                               + insert.MercrediEqu1 + insert.MercrediEqu2 + insert.MercrediEqu3
+                               + insert.JeudiEqu1 + insert.JeudiEqu2 + insert.JeudiEqu3
+                               + insert.VendrediEqu1 + insert.VendrediEqu2 + insert.VendrediEqu3;
+
+                if (totalProd == 0)
+                    continue;
 
                 vues.Add(CreerVueReference(reference, capuchon, insert));
             }

@@ -173,30 +173,6 @@ namespace AmiVanl2.View
                 int nbAssManu =
                     await assManuelController.ChargerAssManuelsAsync();
 
-                //TEST DE VERIFICATION DES DONNEES RECUPEREES////////////////////////////////////////////////
-                if (AppData.Presses.Count > 0)
-                {
-                    PresseProduction premiereLigne = AppData.Presses[0];
-
-                    MessageBox.Show(
-                        "Première ligne récupérée :\n\n" +
-                        "Référence : " + premiereLigne.Reference + "\n" +
-                        "Ancien code : " + premiereLigne.AncienCode + "\n" +
-                        "Equipe : " + premiereLigne.Equipe + "\n" +
-                        "Machine : " + premiereLigne.Machine + "\n" +
-                        "Obj semaine : " + premiereLigne.ObjectifSemaine + "\n" +
-                        "Lundi : " + premiereLigne.ProdLundi + "\n" +
-                        "Mardi : " + premiereLigne.ProdMardi + "\n" +
-                        "Mercredi : " + premiereLigne.ProdMercredi + "\n" +
-                        "Jeudi : " + premiereLigne.ProdJeudi + "\n" +
-                        "Vendredi : " + premiereLigne.ProdVendredi + "\n" +
-                        "Samedi : " + premiereLigne.ProdSamedi + "\n" +
-                        "Dimanche : " + premiereLigne.ProdDimanche + "\n" +
-                        "Total : " + premiereLigne.TotalProduction
-                    );
-                    
-                }
-
                 AppData.DonneesGenerees = true;
 
                 MainWindow fenetre =
@@ -204,23 +180,37 @@ namespace AmiVanl2.View
 
                 fenetre?.MettreAJourNavigation();
 
+                int refPresseAvecProd = AppData.Presses
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Sum(p => p.TotalProduction) > 0);
+
+                int refAssAutoAvecProd = AppData.AssAutos
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Sum(p => p.TotalProduction) > 0);
+
+                int refJointsAvecProd = AppData.Joints
+                    .Count(p => p.TotalProduction > 0);
+
+                int refTrisAvecProd = AppData.Tris
+                    .Count(p => p.TotalProduction > 0);
+
+                int refAssManuAvecProd = AppData.AssManuels
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Any(p =>
+                        p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
+                        p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
+                        p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
+                        p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
+                        p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0));
+
                 MessageBox.Show(
-                    nb +
-                    " lignes presse analysées.\n" +
-
-                    nbAssAuto +
-                    " lignes assemblage automatique analysées.\n" +
-
-                    nbJoints +
-                    " lignes joints analysées.\n" +
-
-                    nbTris +
-                    " lignes tri analysées.\n" +
-
-                    nbAssManu +
-                    " lignes assemblage manuel analysées."
+                    "✔ Données chargées avec succès !\n\n" +
+                    "PRESSE        : " + refPresseAvecProd + " réf. en production  (" + nb + " lignes lues)\n" +
+                    "ASS. AUTO  : " + refAssAutoAvecProd + " réf. en production  (" + nbAssAuto + " lignes lues)\n" +
+                    "JOINTS         : " + refJointsAvecProd + " réf. en production  (" + nbJoints + " lignes lues)\n" +
+                    "TRI                : " + refTrisAvecProd + " réf. en production  (" + nbTris + " lignes lues)\n" +
+                    "ASS. MANU : " + refAssManuAvecProd + " réf. en production  (" + nbAssManu + " lignes lues)"
                 );
-                //////////////////////////////////////////////////////////////////////////////////////////
             }
 
             catch (Exception ex)
