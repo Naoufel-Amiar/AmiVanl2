@@ -14,6 +14,7 @@ namespace AmiVanl2
         {
             InitializeComponent();
             MettreAJourNavigation();
+            MainContent.Children.Add(new WelcomePage());
         }
 
         public void MettreAJourNavigation()
