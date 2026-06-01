@@ -34,8 +34,8 @@ namespace AmiVanl2.Service
         private readonly XFont FH1    = new XFont("Arial", 20, XFontStyleEx.Bold);
         private readonly XFont FNorm  = new XFont("Arial", 10, XFontStyleEx.Regular);
         private readonly XFont FBold  = new XFont("Arial", 10, XFontStyleEx.Bold);
-        private readonly XFont FSmall = new XFont("Arial",  8, XFontStyleEx.Regular);
-        private readonly XFont FTiny  = new XFont("Arial",  7, XFontStyleEx.Regular);
+        private readonly XFont FSmall = new XFont("Arial",  9, XFontStyleEx.Regular);
+        private readonly XFont FTiny  = new XFont("Arial",  8, XFontStyleEx.Regular);
 
         // ===================================================================
         // CLASSES INTERNES
@@ -874,26 +874,34 @@ namespace AmiVanl2.Service
 
         private PlotModel BuildCamembert(string titre, double prod, double obj)
         {
-            double reste = Math.Max(0, obj - prod);
+            double reste     = Math.Max(0, obj - prod);
+            double pctManque = obj > 0 ? reste / obj : 0;
 
             var model = new PlotModel { Title = titre, Background = OxyColors.White };
             var serie = new PieSeries
             {
                 StrokeThickness     = 0,
                 InsideLabelPosition = 0.6,
-                InsideLabelFormat   = "{2:0}%",  // % a l'interieur de la part
-                OutsideLabelFormat  = "{0}",      // valeur reelle a l'exterieur (prise sur le label de la part)
-                FontSize            = 8
+                InsideLabelFormat   = "{2:0}%",  // % a l'interieur
+                OutsideLabelFormat  = "{1}",      // {1} = label string controle par nous (pas la valeur brute)
+                FontSize            = 9
             };
 
-            // Vert = ce qui est fait ; label = valeur => affiche "14950 pcs" a cote
+            // Vert : label = valeur entiere formatee
             if (prod > 0)
                 serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
                     { Fill = OxyColor.FromRgb(40, 160, 80) });
-            // Rouge = reste ; label vide => rien affiche a cote de la part rouge
+
+            // Rouge : label visible seulement si manque > 3 % de l'objectif
             if (reste > 0)
-                serie.Slices.Add(new PieSlice("", reste)
+            {
+                string resteLabel = pctManque > 0.03
+                    ? "manque: " + reste.ToString("0")
+                    : "";
+                serie.Slices.Add(new PieSlice(resteLabel, reste)
                     { Fill = OxyColor.FromRgb(210, 60, 60) });
+            }
+
             if (prod <= 0 && reste <= 0)
                 serie.Slices.Add(new PieSlice("Aucune donnee", 1)
                     { Fill = OxyColor.FromRgb(200, 200, 200) });
