@@ -725,13 +725,15 @@ namespace AmiVanl2.Service
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
                 DessinerEnTete(gfx, "Assemblage Manuel — Suivi journalier par equipe et par operation", ColAssManuel);
 
-                double x0        = Marge;
-                double y0        = HeaderH + 4;
-                double tableW    = W - 2 * Marge;
-                double colRefW   = 115;
-                double colDataW  = (tableW - colRefW) / 8.0;
+                double x0         = Marge;
+                double y0         = HeaderH + 4;
+                double tableW     = W - 2 * Marge;
+                double colRefW    = 105;
+                // Colonne TOTAL plus large pour que les labels exterieurs soient visibles
+                double colTotalW  = (tableW - colRefW) * 0.19;
+                double colDayW    = (tableW - colRefW - colTotalW) / 7.0;
                 double headerRowH = 26;
-                double dataRowH  = (H - y0 - Marge - headerRowH) / totalRows;
+                double dataRowH   = (H - y0 - Marge - headerRowH) / totalRows;
 
                 // En-tete colonnes
                 XColor hBg = XColor.FromArgb(
@@ -750,8 +752,10 @@ namespace AmiVanl2.Service
                 };
                 for (int d = 0; d < 8; d++)
                 {
-                    XColor bg = d == 7 ? hBgTotal : hBg;
-                    DessinerCellule(gfx, x0 + colRefW + d * colDataW, y0, colDataW, headerRowH,
+                    double cw  = d == 7 ? colTotalW : colDayW;
+                    double cx0 = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
+                    XColor bg  = d == 7 ? hBgTotal : hBg;
+                    DessinerCellule(gfx, cx0, y0, cw, headerRowH,
                         dayHeaders[d], FTiny, new XSolidBrush(bg), true);
                 }
 
@@ -814,7 +818,7 @@ namespace AmiVanl2.Service
                         // Separateur entre operations
                         if (opIdx > 0)
                             gfx.DrawLine(new XPen(XColor.FromArgb(130, 130, 130), 0.4),
-                                x0 + colRefW, opY, x0 + tableW, opY);
+                                x0 + colRefW, opY, x0 + colRefW + 7 * colDayW + colTotalW, opY);
 
                         // Construire DayEquipes[8][3]
                         double[][] dayEquipes = {
@@ -849,8 +853,9 @@ namespace AmiVanl2.Service
 
                         for (int d = 0; d < 8; d++)
                         {
-                            double cx = x0 + colRefW + d * colDataW;
-                            DessinerCelluleEquipes(gfx, cx, opY, colDataW, dataRowH,
+                            double cw = d == 7 ? colTotalW : colDayW;
+                            double cx = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
+                            DessinerCelluleEquipes(gfx, cx, opY, cw, dataRowH,
                                 dayEquipes[d], maxVal,
                                 isTotal: d == 7,
                                 isWeekend: d == 5 || d == 6,
