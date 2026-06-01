@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmiVanl2"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1400">
+        Title="Suivi de Production — Baud Industries"
+        Icon="Resources/appicon.ico"
+        Height="800" Width="1400">
 
     <Window.Resources>
 

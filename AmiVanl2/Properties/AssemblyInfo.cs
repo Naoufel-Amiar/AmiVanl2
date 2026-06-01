@@ -7,12 +7,12 @@ using System.Windows;
 // Les informations générales relatives à un assembly dépendent de
 // l'ensemble d'attributs suivant. Pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("AmiVanl2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Suivi de Production")]
+[assembly: AssemblyDescription("Application de suivi de production hebdomadaire — Baud Industries")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AmiVanl2")]
-[assembly: AssemblyCopyright("Copyright ©  2026")]
+[assembly: AssemblyCompany("Baud Industries")]
+[assembly: AssemblyProduct("AmiVanl2 — Suivi Production")]
+[assembly: AssemblyCopyright("Copyright © Baud Industries 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
