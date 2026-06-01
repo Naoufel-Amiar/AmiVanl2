@@ -101,6 +101,10 @@ namespace AmiVanl2.View
 
             AppData.ExcelFilePath = filePath;
 
+            MainWindow fenetre = Application.Current.MainWindow as MainWindow;
+
+            fenetre?.MettreAJourNavigation();
+
             TxtSelectedFile.Text =
                 System.IO.Path.GetFileName(filePath);
 
@@ -157,6 +161,17 @@ namespace AmiVanl2.View
                 int nbJoints =
                     await jointController.ChargerJointsAsync();
 
+                TriController triController =
+                    new TriController();
+
+                AssManuelController assManuelController =
+                    new AssManuelController();
+
+                int nbTris =
+                    await triController.ChargerTrisAsync();
+
+                int nbAssManu =
+                    await assManuelController.ChargerAssManuelsAsync();
 
                 //TEST DE VERIFICATION DES DONNEES RECUPEREES////////////////////////////////////////////////
                 if (AppData.Presses.Count > 0)
@@ -182,13 +197,28 @@ namespace AmiVanl2.View
                     
                 }
 
+                AppData.DonneesGenerees = true;
+
+                MainWindow fenetre =
+                    Application.Current.MainWindow as MainWindow;
+
+                fenetre?.MettreAJourNavigation();
+
                 MessageBox.Show(
                     nb +
                     " lignes presse analysées.\n" +
+
                     nbAssAuto +
                     " lignes assemblage automatique analysées.\n" +
+
                     nbJoints +
-                    " lignes joints analysées.\n"
+                    " lignes joints analysées.\n" +
+
+                    nbTris +
+                    " lignes tri analysées.\n" +
+
+                    nbAssManu +
+                    " lignes assemblage manuel analysées."
                 );
                 //////////////////////////////////////////////////////////////////////////////////////////
             }

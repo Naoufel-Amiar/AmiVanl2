@@ -1,6 +1,8 @@
 ﻿using AmiVanl2.Controller;
 using AmiVanl2.Model;
+using LiveChartsCore.SkiaSharpView;
 using OxyPlot;
+using OxyPlot.Axes;
 using OxyPlot.Series;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +14,6 @@ namespace AmiVanl2.View
     public partial class SuiviAssManuel : UserControl
     {
         private AssManuelController assManuelController;
-
-        private string referenceSelectionnee = "";
 
         public SuiviAssManuel()
         {
@@ -32,291 +32,240 @@ namespace AmiVanl2.View
                 await assManuelController.ChargerAssManuelsAsync();
             }
 
+            ChargerReferences();
+        }
+
+        private void ChargerReferences()
+        {
             List<string> references =
                 AppData.AssManuels
                 .Select(x => x.Reference)
                 .Distinct()
                 .ToList();
 
-            ListeReferences.ItemsSource = references;
+            List<AssManuelReferenceViewModel> vues =
+                new List<AssManuelReferenceViewModel>();
 
-            string premiereReference =
-                references.FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(premiereReference))
+            foreach (string reference in references)
             {
-                TitreReference.Text = "Aucune donnée ASS manuel chargée.";
-                return;
-            }
+                AssManuelProduction capuchon =
+                    AppData.AssManuels.FirstOrDefault(x =>
+                        x.Reference == reference
+                        && x.Operation.ToLower().Contains("capuchon"));
 
-            referenceSelectionnee = premiereReference;
+                AssManuelProduction insert =
+                    AppData.AssManuels.FirstOrDefault(x =>
+                        x.Reference == reference
+                        && x.Operation.ToLower().Contains("insert"));
 
-            ChargerOperations(referenceSelectionnee);
-        }
-
-        private void BtnReference_Click(object sender, RoutedEventArgs e)
-        {
-            Button bouton =
-                sender as Button;
-
-            if (bouton == null)
-            {
-                return;
-            }
-
-            string reference =
-                bouton.Tag as string;
-
-            if (string.IsNullOrWhiteSpace(reference))
-            {
-                return;
-            }
-
-            referenceSelectionnee = reference;
-
-            ChargerOperations(referenceSelectionnee);
-        }
-
-        private void ChargerOperations(string reference)
-        {
-            List<string> operations =
-                AppData.AssManuels
-                .Where(x => x.Reference == reference)
-                .Select(x => x.Operation)
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Distinct()
-                .ToList();
-
-            ComboOperations.ItemsSource = operations;
-
-            if (operations.Count > 0)
-            {
-                ComboOperations.SelectedIndex = 0;
-            }
-            else
-            {
-                TitreReference.Text =
-                    "Référence : " + reference + " | aucune opération trouvée.";
-
-                ListeCamemberts.ItemsSource = null;
-            }
-        }
-
-        private void ComboOperations_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(referenceSelectionnee))
-            {
-                return;
-            }
-
-            string operation =
-                ComboOperations.SelectedItem as string;
-
-            if (string.IsNullOrWhiteSpace(operation))
-            {
-                return;
-            }
-
-            AssManuelProduction assManuel =
-                AppData.AssManuels
-                .FirstOrDefault(x =>
-                    x.Reference == referenceSelectionnee
-                    && x.Operation == operation);
-
-            if (assManuel == null)
-            {
-                return;
-            }
-
-            ChargerReferenceOperation(assManuel);
-        }
-
-        private void ChargerReferenceOperation(AssManuelProduction assManuel)
-        {
-            TitreReference.Text =
-                "Référence : "
-                + assManuel.Reference
-                + " | Opération : "
-                + assManuel.Operation
-                + " | Équipe : "
-                + assManuel.Equipe;
-
-            List<PlotModel> camemberts =
-                new List<PlotModel>();
-
-            camemberts.Add(CreerCamembert(
-                assManuel.LabelLundi,
-                assManuel.LundiEqu1,
-                assManuel.LundiEqu2,
-                assManuel.LundiEqu3,
-                assManuel.ObjectifEquipe));
-
-            camemberts.Add(CreerCamembert(
-                assManuel.LabelMardi,
-                assManuel.MardiEqu1,
-                assManuel.MardiEqu2,
-                assManuel.MardiEqu3,
-                assManuel.ObjectifEquipe));
-
-            camemberts.Add(CreerCamembert(
-                assManuel.LabelMercredi,
-                assManuel.MercrediEqu1,
-                assManuel.MercrediEqu2,
-                assManuel.MercrediEqu3,
-                assManuel.ObjectifEquipe));
-
-            camemberts.Add(CreerCamembert(
-                assManuel.LabelJeudi,
-                assManuel.JeudiEqu1,
-                assManuel.JeudiEqu2,
-                assManuel.JeudiEqu3,
-                assManuel.ObjectifEquipe));
-
-            camemberts.Add(CreerCamembert(
-                assManuel.LabelVendredi,
-                assManuel.VendrediEqu1,
-                assManuel.VendrediEqu2,
-                assManuel.VendrediEqu3,
-                assManuel.ObjectifEquipe));
-
-            camemberts.Add(CreerCamembertWeekend(
-                assManuel.LabelSamedi,
-                assManuel.ProdSamedi));
-
-            camemberts.Add(CreerCamembertWeekend(
-                assManuel.LabelDimanche,
-                assManuel.ProdDimanche));
-
-            ListeCamemberts.ItemsSource = null;
-            ListeCamemberts.ItemsSource = camemberts;
-        }
-
-        private PlotModel CreerCamembert(
-            string titre,
-            double equ1,
-            double equ2,
-            double equ3,
-            double objectifJour)
-        {
-            double totalProduit =
-                equ1 + equ2 + equ3;
-
-            double reste =
-                objectifJour - totalProduit;
-
-            if (reste < 0)
-            {
-                reste = 0;
-            }
-
-            PlotModel model =
-                new PlotModel
+                if (capuchon == null && insert == null)
                 {
-                    Title = titre
-                };
+                    continue;
+                }
 
-            PieSeries serie =
-                new PieSeries
-                {
-                    StrokeThickness = 1,
-                    AngleSpan = 360,
-                    StartAngle = 0,
-                    InsideLabelPosition = 0.65,
-                    OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
-                };
-
-            if (equ1 > 0)
-            {
-                serie.Slices.Add(
-                    new PieSlice("EQ1", equ1)
-                    {
-                        Fill = OxyColor.FromRgb(0, 90, 0)
-                    });
+                vues.Add(CreerVueReference(reference, capuchon, insert));
             }
 
-            if (equ2 > 0)
-            {
-                serie.Slices.Add(
-                    new PieSlice("EQ2", equ2)
-                    {
-                        Fill = OxyColor.FromRgb(0, 150, 0)
-                    });
-            }
-
-            if (equ3 > 0)
-            {
-                serie.Slices.Add(
-                    new PieSlice("EQ3", equ3)
-                    {
-                        Fill = OxyColor.FromRgb(120, 210, 120)
-                    });
-            }
-
-            if (reste > 0)
-            {
-                serie.Slices.Add(
-                    new PieSlice("Reste", reste)
-                    {
-                        Fill = OxyColors.Red
-                    });
-            }
-
-            if (totalProduit == 0 && reste == 0)
-            {
-                serie.Slices.Add(
-                    new PieSlice("Aucune donnée", 1)
-                    {
-                        Fill = OxyColors.LightGray
-                    });
-            }
-
-            model.Series.Add(serie);
-
-            return model;
+            ListeReferences.ItemsSource = vues;
         }
 
-        private PlotModel CreerCamembertWeekend(
-            string titre,
-            double production)
+        private AssManuelReferenceViewModel CreerVueReference(
+            string reference,
+            AssManuelProduction capuchon,
+            AssManuelProduction insert)
+        {
+            double objectifSemaine =
+                capuchon != null
+                    ? capuchon.ObjectifSemaine
+                    : insert.ObjectifSemaine;
+
+            double objectifJour =
+                objectifSemaine / 5.0;
+
+            double[] prodCapuchon =
+                ConstruireProductionJournaliere(capuchon);
+
+            double[] prodInsert =
+                ConstruireProductionJournaliere(insert);
+
+            double totalCapuchon =
+                prodCapuchon.Sum();
+
+            double totalInsert =
+                prodInsert.Sum();
+
+            PlotModel graphique =
+                CreerGraphiqueReference(
+                    reference,
+                    prodCapuchon,
+                    prodInsert,
+                    objectifJour);
+
+            return new AssManuelReferenceViewModel
+            {
+                Titre =
+                    "Référence : " + reference,
+
+                Graphique =
+                    graphique,
+
+                InfoCapuchon =
+                    "Capuchon : "
+                    + totalCapuchon.ToString("0")
+                    + " / "
+                    + objectifSemaine.ToString("0")
+                    + " pièces",
+
+                InfoInsert =
+                    "Insert : "
+                    + totalInsert.ToString("0")
+                    + " / "
+                    + objectifSemaine.ToString("0")
+                    + " pièces",
+
+                InfoObjectif =
+                    "Objectif jour : "
+                    + objectifJour.ToString("0")
+                    + " | Objectif semaine : "
+                    + objectifSemaine.ToString("0")
+            };
+        }
+
+        private double[] ConstruireProductionJournaliere(
+            AssManuelProduction operation)
+        {
+            if (operation == null)
+            {
+                return new double[] { 0, 0, 0, 0, 0, 0, 0 };
+            }
+
+            return new double[]
+            {
+                operation.LundiEqu1
+                + operation.LundiEqu2
+                + operation.LundiEqu3,
+
+                operation.MardiEqu1
+                + operation.MardiEqu2
+                + operation.MardiEqu3,
+
+                operation.MercrediEqu1
+                + operation.MercrediEqu2
+                + operation.MercrediEqu3,
+
+                operation.JeudiEqu1
+                + operation.JeudiEqu2
+                + operation.JeudiEqu3,
+
+                operation.VendrediEqu1
+                + operation.VendrediEqu2
+                + operation.VendrediEqu3,
+
+                operation.ProdSamedi,
+
+                operation.ProdDimanche
+            };
+        }
+
+        private PlotModel CreerGraphiqueReference(
+    string reference,
+    double[] prodCapuchon,
+    double[] prodInsert,
+    double objectifJour)
         {
             PlotModel model =
                 new PlotModel
                 {
-                    Title = titre
+                    Title = reference
                 };
 
-            PieSeries serie =
-                new PieSeries
+            CategoryAxis axeX =
+                new CategoryAxis
                 {
-                    StrokeThickness = 1,
-                    AngleSpan = 360,
-                    StartAngle = 0,
-                    InsideLabelPosition = 0.7,
-                    OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
+                    Position = AxisPosition.Bottom
                 };
 
-            if (production > 0)
+            axeX.Labels.Add("Lun");
+            axeX.Labels.Add("Mar");
+            axeX.Labels.Add("Mer");
+            axeX.Labels.Add("Jeu");
+            axeX.Labels.Add("Ven");
+            axeX.Labels.Add("Sam");
+            axeX.Labels.Add("Dim");
+
+            LinearAxis axeY =
+                new LinearAxis
+                {
+                    Position = AxisPosition.Left,
+                    Minimum = 0,
+                    Title = "Production"
+                };
+
+            LineSeries serieCapuchon =
+                new LineSeries
+                {
+                    Title = "Capuchon",
+                    StrokeThickness = 2,
+                    MarkerType = MarkerType.Circle,
+                    MarkerSize = 4
+                };
+
+            LineSeries serieInsert =
+                new LineSeries
+                {
+                    Title = "Insert",
+                    StrokeThickness = 2,
+                    MarkerType = MarkerType.Square,
+                    MarkerSize = 4
+                };
+
+            LineSeries serieObjectif =
+                new LineSeries
+                {
+                    Title = "Objectif jour",
+                    StrokeThickness = 2,
+                    MarkerType = MarkerType.Diamond,
+                    MarkerSize = 4
+                };
+
+            for (int i = 0; i < 7; i++)
             {
-                serie.Slices.Add(
-                    new PieSlice("PROD", production)
-                    {
-                        Fill = OxyColor.FromRgb(70, 160, 0)
-                    });
-            }
-            else
-            {
-                serie.Slices.Add(
-                    new PieSlice("Aucune prod", 1)
-                    {
-                        Fill = OxyColors.LightGray
-                    });
+                serieCapuchon.Points.Add(
+                    new DataPoint(i, prodCapuchon[i]));
+
+                serieInsert.Points.Add(
+                    new DataPoint(i, prodInsert[i]));
+
+                double objectif =
+                    i <= 4
+                        ? objectifJour
+                        : 0;
+
+                serieObjectif.Points.Add(
+                    new DataPoint(i, objectif));
             }
 
-            model.Series.Add(serie);
+            model.Axes.Add(axeX);
+            model.Axes.Add(axeY);
+
+            model.Series.Add(serieCapuchon);
+            model.Series.Add(serieInsert);
+            model.Series.Add(serieObjectif);
 
             return model;
+        }
+
+        public class AssManuelReferenceViewModel
+        {
+            public string Titre { get; set; } = "";
+
+            public PlotModel Graphique { get; set; }
+
+            public string InfoCapuchon { get; set; } = "";
+
+            public string InfoInsert { get; set; } = "";
+
+            public string InfoObjectif { get; set; } = "";
         }
     }
 }

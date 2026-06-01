@@ -9,6 +9,31 @@
 
     <Window.Resources>
 
+        <Style TargetType="Button">
+
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#303030"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsEnabled"
+                     Value="False">
+
+                    <Setter Property="Background"
+                        Value="#1A1A1A"/>
+
+                    <Setter Property="Foreground"
+                        Value="#666666"/>
+
+                    <Setter Property="Opacity"
+                        Value="0.7"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="45"/>
             <Setter Property="Margin" Value="0,0,0,10"/>

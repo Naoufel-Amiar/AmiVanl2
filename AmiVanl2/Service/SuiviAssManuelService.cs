@@ -66,7 +66,7 @@ namespace AmiVanl2.Service
                         string operationTexte =
                             LireTexte(feuille, ligne, 3);
 
-                        if (!string.IsNullOrWhiteSpace(referenceTexte))
+                        if (EstReferenceValide(referenceTexte))
                         {
                             referenceCourante = referenceTexte;
                         }

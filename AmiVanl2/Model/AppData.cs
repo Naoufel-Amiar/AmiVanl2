@@ -30,6 +30,8 @@ namespace AmiVanl2.Model
         public static List<AssManuelProduction> AssManuels { get; set; }
             = new List<AssManuelProduction>();
 
+        public static bool DonneesGenerees { get; set; } = false;
+
         // Vérifie qu'un fichier est chargé
         public static bool HasExcelFile()
         {
@@ -53,6 +55,8 @@ namespace AmiVanl2.Model
             ExcelFilePath = "";
 
             ObjectifProduction = "";
+
+            DonneesGenerees = false;
         }
     }
 }

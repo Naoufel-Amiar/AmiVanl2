@@ -1,4 +1,5 @@
-﻿using AmiVanl2.View;
+﻿using AmiVanl2.Model;
+using AmiVanl2.View;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -14,8 +15,24 @@ namespace AmiVanl2
         public MainWindow()
         {
             InitializeComponent();
+            MettreAJourNavigation();
         }
 
+        public void MettreAJourNavigation()
+        {
+            bool navigationActive =
+                AppData.HasExcelFile()
+                && AppData.DonneesGenerees;
+
+            BtnSuiviPresse.IsEnabled = navigationActive;
+            BtnSuiviAssAuto.IsEnabled = navigationActive;
+            BtnSuiviJoints.IsEnabled = navigationActive;
+            BtnSuiviTri.IsEnabled = navigationActive;
+            BtnSuiviAssManuel.IsEnabled = navigationActive;
+            BtnExportPDF.IsEnabled = navigationActive;
+
+            BtnAccueilImport.IsEnabled = true;
+        }
 
 
         //ACCUEIL / IMPORT
