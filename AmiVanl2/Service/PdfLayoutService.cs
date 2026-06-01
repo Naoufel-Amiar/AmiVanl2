@@ -429,7 +429,8 @@ namespace AmiVanl2.Service
                     {
                         Text = prods[j].ToString("0"),
                         TextPosition = new DataPoint(j, prods[j]),
-                        FontSize = 7,
+                        FontSize = 10,
+                        FontWeight = OxyPlot.FontWeights.Bold,
                         TextColor = OxyColors.Black,
                         StrokeThickness = 0,
                         Background = OxyColors.Transparent
@@ -450,7 +451,7 @@ namespace AmiVanl2.Service
                     StrokeThickness = 3.0,
                     Text = "Obj/j: " + objJour.ToString("0"),
                     TextColor = OxyColor.FromRgb(180, 50, 0),
-                    FontSize = 9,
+                    FontSize = 11,
                     FontWeight = OxyPlot.FontWeights.Bold
                 });
             }
@@ -879,8 +880,7 @@ namespace AmiVanl2.Service
 
         private PlotModel BuildCamembert(string titre, double prod, double obj)
         {
-            double reste     = Math.Max(0, obj - prod);
-            double pctManque = obj > 0 ? reste / obj : 0;
+            double reste = Math.Max(0, obj - prod);
 
             var model = new PlotModel { Title = titre, Background = OxyColors.White };
             var serie = new PieSeries
@@ -888,8 +888,8 @@ namespace AmiVanl2.Service
                 StrokeThickness     = 0,
                 InsideLabelPosition = 0.6,
                 InsideLabelFormat   = "{2:0}%",  // % a l'interieur
-                OutsideLabelFormat  = "{1}",      // {1} = label string controle par nous (pas la valeur brute)
-                FontSize            = 9
+                OutsideLabelFormat  = "{1}",      // {1} = label string controle par nous
+                FontSize            = 11
             };
 
             // Vert : label = valeur entiere formatee
@@ -897,15 +897,10 @@ namespace AmiVanl2.Service
                 serie.Slices.Add(new PieSlice(prod.ToString("0") + " pcs", prod)
                     { Fill = OxyColor.FromRgb(40, 160, 80) });
 
-            // Rouge : label visible seulement si manque > 3 % de l'objectif
+            // Rouge : toujours afficher le manque si > 0 (meme 3% = potentiellement 2000 pieces)
             if (reste > 0)
-            {
-                string resteLabel = pctManque > 0.03
-                    ? "manque: " + reste.ToString("0")
-                    : "";
-                serie.Slices.Add(new PieSlice(resteLabel, reste)
+                serie.Slices.Add(new PieSlice("manque: " + reste.ToString("0"), reste)
                     { Fill = OxyColor.FromRgb(210, 60, 60) });
-            }
 
             if (prod <= 0 && reste <= 0)
                 serie.Slices.Add(new PieSlice("Aucune donnee", 1)
