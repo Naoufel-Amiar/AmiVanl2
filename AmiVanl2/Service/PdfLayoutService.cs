@@ -755,19 +755,23 @@ namespace AmiVanl2.Service
                         dayHeaders[d], FTiny, new XSolidBrush(bg), true);
                 }
 
-                // Echelle barres : max equipe sur tous les jours
-                double maxVal = 1;
-                foreach (var m in assManuels)
-                {
-                    double[] vals = {
-                        m.LundiEqu1, m.LundiEqu2, m.LundiEqu3,
-                        m.MardiEqu1, m.MardiEqu2, m.MardiEqu3,
-                        m.MercrediEqu1, m.MercrediEqu2, m.MercrediEqu3,
-                        m.JeudiEqu1, m.JeudiEqu2, m.JeudiEqu3,
-                        m.VendrediEqu1, m.VendrediEqu2, m.VendrediEqu3
-                    };
-                    foreach (var v in vals) if (v > maxVal) maxVal = v;
-                }
+                // Echelle barres : max equipe PAR REFERENCE (evite que les petites refs soient ecrasees)
+                // On calcule un maxVal par groupe, stocke dans un dictionnaire indexe sur refs
+                var maxValParRef = refs.Select(grp => {
+                    double m = 1;
+                    foreach (var op in grp)
+                    {
+                        double[] vals = {
+                            op.LundiEqu1, op.LundiEqu2, op.LundiEqu3,
+                            op.MardiEqu1, op.MardiEqu2, op.MardiEqu3,
+                            op.MercrediEqu1, op.MercrediEqu2, op.MercrediEqu3,
+                            op.JeudiEqu1, op.JeudiEqu2, op.JeudiEqu3,
+                            op.VendrediEqu1, op.VendrediEqu2, op.VendrediEqu3
+                        };
+                        foreach (var v in vals) if (v > m) m = v;
+                    }
+                    return m;
+                }).ToList();
 
                 XColor refBg = XColor.FromArgb(
                     Math.Min(255, (int)(ColAssManuel.R * 0.94) + 8),
@@ -775,8 +779,10 @@ namespace AmiVanl2.Service
                     Math.Min(255, (int)(ColAssManuel.B * 0.94) + 8));
 
                 int rowIdx = 0;
+                int refIdx = 0;
                 foreach (var ops in refs)
                 {
+                    double maxVal = maxValParRef[refIdx++];
                     int opCount = ops.Count;
                     double refH = opCount * dataRowH;
                     double ry   = y0 + headerRowH + rowIdx * dataRowH;
@@ -828,6 +834,18 @@ namespace AmiVanl2.Service
 
                         // Si cellule Excel fusionnee, l'Insert n'a pas d'objectif propre : emprunter celui du groupe
                         double opObj = op.ObjectifSemaine > 0 ? op.ObjectifSemaine : ops[0].ObjectifSemaine;
+
+                        // Corriger le label si objectif emprunte
+                        if (op.ObjectifSemaine == 0 && opObj > 0)
+                        {
+                            // Redessiner le label avec le bon objectif (par dessus l'ancien)
+                            gfx.DrawRectangle(new XSolidBrush(refBg),
+                                x0, opY + dataRowH * 0.72, colRefW, dataRowH * 0.28);
+                            gfx.DrawString(opLabel + "  Obj: " + opObj.ToString("0"),
+                                FTiny, new XSolidBrush(XColor.FromArgb(100, 60, 120)),
+                                new XRect(x0 + 3, opY + dataRowH * 0.72, colRefW - 6, dataRowH * 0.28),
+                                XStringFormats.CenterLeft);
+                        }
 
                         for (int d = 0; d < 8; d++)
                         {
