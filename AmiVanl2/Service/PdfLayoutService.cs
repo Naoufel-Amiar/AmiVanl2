@@ -876,7 +876,13 @@ namespace AmiVanl2.Service
         {
             double reste = Math.Max(0, obj - prod);
 
-            var model = new PlotModel { Title = titre, Background = OxyColors.White };
+            var model = new PlotModel
+            {
+                Title           = titre,
+                Subtitle        = prod.ToString("0") + " / " + obj.ToString("0") + " pcs",
+                SubtitleFontSize = 9,
+                Background      = OxyColors.White
+            };
             var serie = new PieSeries
             {
                 StrokeThickness = 0, InsideLabelPosition = 0.68,
