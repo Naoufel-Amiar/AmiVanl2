@@ -83,15 +83,13 @@ namespace AmiVanl2.Service
             if (presses.Count > 0)
             {
                 PageSeparateur(doc, "SUIVI PRESSE", ColPresse);
-                PagePresseBarres(doc, presses);
-                PagePresseCamemberts(doc, presses);
+                PagePresseComplet(doc, presses);
             }
 
             if (assAutos.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE AUTOMATIQUE", ColAssAuto);
-                PageAssAutoBarres(doc, assAutos);
-                PageAssAutoCamemberts(doc, assAutos);
+                PageAssAutoComplet(doc, assAutos);
             }
 
             if (joints.Count > 0)
@@ -294,17 +292,18 @@ namespace AmiVanl2.Service
         }
 
         // ===================================================================
-        // PRESSE — BARRES PAR REFERENCE (une chart par ref, valeurs + objectif)
+        // PRESSE — PAGE COMPLETE (barres + camembert par ref sur 1 page)
         // ===================================================================
 
-        private void PagePresseBarres(PdfDocument doc, List<PresseProduction> presses)
+        private void PagePresseComplet(PdfDocument doc, List<PresseProduction> presses)
         {
-            var refs = presses.GroupBy(p => p.Reference).Select(g => new RefAgregee
-            {
-                Label = g.Key.ToString("000000") + " — " +
-                        string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
-                        "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
-                        "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+            var refs = presses.GroupBy(p => p.Reference).Select(g => new {
+                BarLabel = g.Key.ToString("000000") + " — " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                           "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                           "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+                CamTitre = g.Key.ToString("000000") + " - " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()),
                 DayLabels = new[] {
                     g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
                     g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
@@ -314,84 +313,50 @@ namespace AmiVanl2.Service
                     g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
                     g.Sum(x => x.ProdDimanche)
                 },
-                ObjSemaine = g.Sum(x => x.ObjectifSemaine)
+                ObjSemaine = g.Sum(x => x.ObjectifSemaine),
+                TotalProd  = g.Sum(x => x.TotalProduction)
             }).ToList();
 
-            int cols = refs.Count <= 2 ? refs.Count : refs.Count <= 4 ? 2 : 3;
-            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
-
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Suivi Presse — Production journaliere VS Objectif", ColPresse);
+                DessinerEnTete(gfx, "Suivi Presse — Production journaliere VS Objectif semaine", ColPresse);
                 DessinerLegendeCouleurs(gfx, H - 18);
 
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge - 22) / rows;
-                double cW = (W - 2 * Marge) / cols;
+                double y0   = HeaderH + Marge;
+                double rowH = (H - y0 - Marge - 22) / refs.Count;
+                double barW = (W - 2 * Marge) * 0.72;
+                double camW = (W - 2 * Marge) * 0.28;
 
                 for (int i = 0; i < refs.Count; i++)
                 {
-                    int col = i % cols, row = i / cols;
-                    var r = refs[i];
-                    var model = BuildBarresJournalieres(r.Label, r.DayLabels, r.Prods, r.ObjSemaine);
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
+                    var r  = refs[i];
+                    double ry = y0 + i * rowH;
+
+                    var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine);
+                    PlacerGraphique(gfx, barModel, Marge, ry, barW - 6, rowH - 8);
+
+                    var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
+                    PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
         }
 
         // ===================================================================
-        // PRESSE — CAMEMBERTS OBJECTIFS SEMAINE
+        // ASS AUTO — PAGE COMPLETE (barres + camembert par ref sur 1 page)
         // ===================================================================
 
-        private void PagePresseCamemberts(PdfDocument doc, List<PresseProduction> presses)
+        private void PageAssAutoComplet(PdfDocument doc, List<AssAutoProduction> assAutos)
         {
-            var refs = presses
-                .GroupBy(p => p.Reference)
-                .Select(g => new {
-                    Titre     = g.Key.ToString("000000") + " - " + string.Join("/", g.Select(x => x.Machine).Distinct()),
-                    TotalProd = g.Sum(x => x.TotalProduction),
-                    TotalObj  = g.Max(x => x.ObjectifSemaine)
-                }).ToList();
-
-            int cols = refs.Count <= 3 ? refs.Count : refs.Count <= 6 ? 3 : 4;
-            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
-
-            var page = NouvellePageA3(doc);
-            using (var gfx = XGraphics.FromPdfPage(page))
-            {
-                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Suivi Presse — Taux d'atteinte des objectifs semaine", ColPresse);
-
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
-
-                for (int i = 0; i < refs.Count; i++)
-                {
-                    var r = refs[i];
-                    var model = BuildCamembert(r.Titre, r.TotalProd, r.TotalObj);
-                    int col = i % cols, row = i / cols;
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 6, cH - 6);
-                }
-                DessinerNumeroPage(gfx, doc.Pages.Count);
-            }
-        }
-
-        // ===================================================================
-        // ASS AUTO — BARRES PAR REFERENCE
-        // ===================================================================
-
-        private void PageAssAutoBarres(PdfDocument doc, List<AssAutoProduction> assAutos)
-        {
-            var refs = assAutos.GroupBy(a => a.Reference).Select(g => new RefAgregee
-            {
-                Label = g.Key + " — " +
-                        string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
-                        "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
-                        "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+            var refs = assAutos.GroupBy(a => a.Reference).Select(g => new {
+                BarLabel = g.Key + " — " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                           "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                           "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
+                CamTitre = g.Key + " - " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()),
                 DayLabels = new[] {
                     g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
                     g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
@@ -401,70 +366,32 @@ namespace AmiVanl2.Service
                     g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
                     g.Sum(x => x.ProdDimanche)
                 },
-                ObjSemaine = g.Sum(x => x.ObjectifSemaine)
+                ObjSemaine = g.Sum(x => x.ObjectifSemaine),
+                TotalProd  = g.Sum(x => x.TotalProduction)
             }).ToList();
 
-            int cols = refs.Count <= 2 ? refs.Count : refs.Count <= 4 ? 2 : 3;
-            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
-
             var page = NouvellePageA3(doc);
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Automatique — Production journaliere VS Objectif", ColAssAuto);
+                DessinerEnTete(gfx, "Assemblage Automatique — Production journaliere VS Objectif semaine", ColAssAuto);
                 DessinerLegendeCouleurs(gfx, H - 18);
 
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge - 22) / rows;
-                double cW = (W - 2 * Marge) / cols;
+                double y0   = HeaderH + Marge;
+                double rowH = (H - y0 - Marge - 22) / refs.Count;
+                double barW = (W - 2 * Marge) * 0.72;
+                double camW = (W - 2 * Marge) * 0.28;
 
                 for (int i = 0; i < refs.Count; i++)
                 {
-                    int col = i % cols, row = i / cols;
-                    var r = refs[i];
-                    var model = BuildBarresJournalieres(r.Label, r.DayLabels, r.Prods, r.ObjSemaine);
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 8, cH - 8);
-                }
-                DessinerNumeroPage(gfx, doc.Pages.Count);
-            }
-        }
+                    var r  = refs[i];
+                    double ry = y0 + i * rowH;
 
-        // ===================================================================
-        // ASS AUTO — CAMEMBERTS
-        // ===================================================================
+                    var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine);
+                    PlacerGraphique(gfx, barModel, Marge, ry, barW - 6, rowH - 8);
 
-        private void PageAssAutoCamemberts(PdfDocument doc, List<AssAutoProduction> assAutos)
-        {
-            var refs = assAutos
-                .Where(a => a.ObjectifSemaine > 0)
-                .GroupBy(a => a.Reference)
-                .Select(g => new {
-                    Titre     = g.Key + " - " + string.Join("/", g.Select(x => x.Machine).Distinct()),
-                    TotalProd = g.Sum(x => x.TotalProduction),
-                    TotalObj  = g.Sum(x => x.ObjectifSemaine)
-                }).ToList();
-
-            if (refs.Count == 0) return;
-
-            int cols = refs.Count <= 3 ? refs.Count : refs.Count <= 6 ? 3 : 4;
-            int rows = (int)Math.Ceiling(refs.Count / (double)cols);
-
-            var page = NouvellePageA3(doc);
-            using (var gfx = XGraphics.FromPdfPage(page))
-            {
-                gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Automatique — Taux d'atteinte des objectifs semaine", ColAssAuto);
-
-                double y0 = HeaderH + Marge;
-                double cH = (H - y0 - Marge) / rows;
-                double cW = (W - 2 * Marge) / cols;
-
-                for (int i = 0; i < refs.Count; i++)
-                {
-                    var r = refs[i];
-                    var model = BuildCamembert(r.Titre, r.TotalProd, r.TotalObj);
-                    int col = i % cols, row = i / cols;
-                    PlacerGraphique(gfx, model, Marge + col * cW, y0 + row * cH, cW - 6, cH - 6);
+                    var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
+                    PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
