@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="AmiVanl2.View.SuiviAssManuel"
+<UserControl x:Class="AmiVanl2.View.SuiviAssManuel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:oxy="http://oxyplot.org/wpf"
@@ -8,91 +8,168 @@
              d:DesignHeight="700"
              d:DesignWidth="1200">
 
+    <UserControl.Resources>
+        <Style x:Key="RefButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="4,3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="#1E3A5F"
+                                CornerRadius="20"
+                                Padding="18,8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Background="White" Margin="20">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Titre -->
         <TextBlock
+            Grid.Row="0"
             Text="SUIVI ASS MANUEL"
             FontSize="30"
             FontFamily="Bahnschrift"
             FontWeight="Bold"
             HorizontalAlignment="Center"
-            Margin="0,0,0,20"/>
+            Margin="0,0,0,15"/>
 
+        <!-- Boutons de références -->
         <ScrollViewer
             Grid.Row="1"
-            VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled">
+            HorizontalScrollBarVisibility="Auto"
+            VerticalScrollBarVisibility="Disabled"
+            Margin="0,0,0,15">
 
-            <ItemsControl x:Name="ListeReferences">
-
+            <ItemsControl x:Name="ListeBoutons">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border
-                            Width="540"
-                            Height="430"
-                            Margin="12"
-                            Padding="15"
-                            BorderBrush="#DDD"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Background="#FAFAFA">
-
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <TextBlock
-                                    Text="{Binding Titre}"
-                                    FontSize="18"
-                                    FontFamily="Bahnschrift"
-                                    FontWeight="Bold"
-                                    HorizontalAlignment="Center"
-                                    Margin="0,0,0,10"/>
-
-                                <oxy:PlotView
-                                    Grid.Row="1"
-                                    Model="{Binding Graphique}"/>
-
-                                <StackPanel Grid.Row="2" Margin="0,10,0,0">
-
-                                    <TextBlock
-                                        Text="{Binding InfoCapuchon}"
-                                        FontFamily="Bahnschrift"
-                                        FontSize="13"/>
-
-                                    <TextBlock
-                                        Text="{Binding InfoInsert}"
-                                        FontFamily="Bahnschrift"
-                                        FontSize="13"/>
-
-                                    <TextBlock
-                                        Text="{Binding InfoObjectif}"
-                                        FontFamily="Bahnschrift"
-                                        FontSize="13"
-                                        FontWeight="SemiBold"/>
-
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                        <Button
+                            Content="{Binding Reference}"
+                            Tag="{Binding}"
+                            Style="{StaticResource RefButtonStyle}"
+                            Click="BtnReference_Click"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
-
             </ItemsControl>
         </ScrollViewer>
+
+        <!-- Titre référence sélectionnée -->
+        <TextBlock
+            x:Name="TitreReference"
+            Grid.Row="2"
+            FontSize="18"
+            FontFamily="Bahnschrift"
+            FontWeight="SemiBold"
+            HorizontalAlignment="Center"
+            Margin="0,0,0,5"/>
+
+        <!-- Infos résumé -->
+        <StackPanel
+            x:Name="PanelInfos"
+            Grid.Row="3"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Margin="0,0,0,10">
+
+            <TextBlock x:Name="TxtInfoCapuchon"
+                       FontFamily="Bahnschrift" FontSize="13"
+                       Margin="0,0,30,0"/>
+
+            <TextBlock x:Name="TxtInfoInsert"
+                       FontFamily="Bahnschrift" FontSize="13"
+                       Margin="0,0,30,0"/>
+
+            <TextBlock x:Name="TxtInfoObjectif"
+                       FontFamily="Bahnschrift" FontSize="13"
+                       FontWeight="SemiBold"/>
+        </StackPanel>
+
+        <!-- 2 graphiques côte à côte -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Margin="0,0,8,0"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Text="Capuchon"
+                        FontSize="16"
+                        FontFamily="Bahnschrift"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,5"/>
+                    <oxy:PlotView
+                        x:Name="PlotCapuchon"
+                        Grid.Row="1"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Margin="8,0,0,0"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Text="Insert"
+                        FontSize="16"
+                        FontFamily="Bahnschrift"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,5"/>
+                    <oxy:PlotView
+                        x:Name="PlotInsert"
+                        Grid.Row="1"/>
+                </Grid>
+            </Border>
+        </Grid>
 
     </Grid>
 </UserControl>
