@@ -435,18 +435,23 @@ namespace AmiVanl2.Service
             }
 
             if (objJour > 0)
+            {
+                // Ligne pleine epaisse pour bien voir l'objectif
                 model.Annotations.Add(new OxyPlot.Annotations.LineAnnotation
                 {
                     Type = OxyPlot.Annotations.LineAnnotationType.Horizontal,
                     Y = objJour,
                     MinimumX = -0.5,
-                    MaximumX = 4.5,
-                    Color = OxyColors.DarkOrange,
-                    LineStyle = LineStyle.Dash,
-                    StrokeThickness = 1.5,
+                    MaximumX = 6.5,
+                    Color = OxyColor.FromRgb(220, 80, 0),
+                    LineStyle = LineStyle.Solid,
+                    StrokeThickness = 3.0,
                     Text = "Obj/j: " + objJour.ToString("0"),
-                    TextColor = OxyColors.DarkOrange
+                    TextColor = OxyColor.FromRgb(180, 50, 0),
+                    FontSize = 9,
+                    FontWeight = OxyPlot.FontWeights.Bold
                 });
+            }
 
             model.Axes.Add(axeX);
             model.Axes.Add(axeY);
@@ -593,7 +598,7 @@ namespace AmiVanl2.Service
                         bool isTotal   = d == 7;
                         bool isWeekend = d == 5 || d == 6;
                         DessinerCelluleEquipes(gfx, cx, ry, colDataW, dataRowH,
-                            ligne.DayEquipes[d], maxVal, isTotal, isWeekend);
+                            ligne.DayEquipes[d], maxVal, isTotal, isWeekend, ligne.ObjSemaine);
                     }
                 }
 
@@ -602,11 +607,28 @@ namespace AmiVanl2.Service
         }
 
         private void DessinerCelluleEquipes(XGraphics gfx, double x, double y, double w, double h,
-            double[] equipes, double maxVal, bool isTotal, bool isWeekend)
+            double[] equipes, double maxVal, bool isTotal, bool isWeekend, double objSemaine)
         {
-            XColor bg = isTotal  ? XColor.FromArgb(210, 230, 210)
-                      : isWeekend ? XColor.FromArgb(238, 238, 238)
-                      : ColBlanc;
+            // Colonne TOTAL : camembert production globale vs objectif semaine
+            if (isTotal)
+            {
+                double totalProd = equipes[0] + equipes[1] + equipes[2];
+                gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(240, 240, 240)), x, y, w, h);
+                gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.6), x, y, w, h);
+                if (objSemaine > 0)
+                {
+                    var camModel = BuildCamembert("", totalProd, objSemaine);
+                    PlacerGraphique(gfx, camModel, x + 2, y + 2, w - 4, h - 4);
+                }
+                else if (totalProd > 0)
+                {
+                    gfx.DrawString(totalProd.ToString("0"), FSmall, XBrushes.Black,
+                        new XRect(x, y, w, h), XStringFormats.Center);
+                }
+                return;
+            }
+
+            XColor bg = isWeekend ? XColor.FromArgb(238, 238, 238) : ColBlanc;
             gfx.DrawRectangle(new XSolidBrush(bg), x, y, w, h);
             gfx.DrawRectangle(new XPen(XColor.FromArgb(175, 175, 175), 0.4), x, y, w, h);
 
@@ -618,11 +640,20 @@ namespace AmiVanl2.Service
                 return;
             }
 
-            XColor[] equColors = {
-                XColor.FromArgb(0, 105, 0),
-                XColor.FromArgb(45, 170, 45),
-                XColor.FromArgb(135, 210, 135)
-            };
+            // Obj journalier par equipe = ObjSemaine / (5 jours * 3 equipes)
+            double objEquipeJour = (objSemaine > 0 && !isWeekend) ? objSemaine / 15.0 : 0;
+
+            // Couleur vert/rouge selon objectif atteint ou non (gris si weekend sans obj)
+            XColor[] equColors = new XColor[3];
+            for (int e = 0; e < 3; e++)
+            {
+                equColors[e] = isWeekend
+                    ? XColor.FromArgb(100, 150, 220)
+                    : objEquipeJour > 0
+                        ? (equipes[e] >= objEquipeJour ? XColor.FromArgb(40, 160, 80) : XColor.FromArgb(210, 60, 60))
+                        : XColor.FromArgb(100, 150, 220);
+            }
+
             string[] equLabels = { "EQ1", "EQ2", "EQ3" };
 
             double labelW  = 20;
