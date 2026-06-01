@@ -407,11 +407,14 @@ namespace AmiVanl2.Service
 
             var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
             foreach (var l in jourLabels) axeX.Labels.Add(l);
-            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = "Production" };
+
+            double objJour   = objSemaine > 0 ? objSemaine / 7.0 : 0;
+            double maxProd   = prods.Length > 0 ? prods.Max() : 0;
+            double yMax      = objJour > 0 ? Math.Max(maxProd, objJour) * 1.12 : (maxProd > 0 ? maxProd * 1.1 : 1);
+            var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Maximum = yMax, Title = "Production" };
 
             var serie = new RectangleBarSeries { StrokeThickness = 0 };
             double lB = 0.38;
-            double objJour = objSemaine > 0 ? objSemaine / 7.0 : 0;
 
             for (int j = 0; j < 7; j++)
             {
@@ -823,6 +826,9 @@ namespace AmiVanl2.Service
                             }
                         };
 
+                        // Si cellule Excel fusionnee, l'Insert n'a pas d'objectif propre : emprunter celui du groupe
+                        double opObj = op.ObjectifSemaine > 0 ? op.ObjectifSemaine : ops[0].ObjectifSemaine;
+
                         for (int d = 0; d < 8; d++)
                         {
                             double cx = x0 + colRefW + d * colDataW;
@@ -830,7 +836,7 @@ namespace AmiVanl2.Service
                                 dayEquipes[d], maxVal,
                                 isTotal: d == 7,
                                 isWeekend: d == 5 || d == 6,
-                                objSemaine: op.ObjectifSemaine);
+                                objSemaine: opObj);
                         }
                     }
 
