@@ -500,7 +500,6 @@ namespace AmiVanl2.Service
                     {
                         Text = prods[j].ToString("0"),
                         TextPosition = new DataPoint(j, prods[j]),
-                        VerticalAlignment = OxyPlot.VerticalAlignment.Bottom,
                         FontSize = 7,
                         TextColor = OxyColors.Black,
                         StrokeThickness = 0,
