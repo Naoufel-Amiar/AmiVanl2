@@ -76,7 +76,7 @@ Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
 ### Important
 
 - Le fichier Excel doit être au format `.xlsx` ou `.xls`
-- Le fichier ne doit pas être ouvert dans Excel en même temps
+- Le fichier peut rester ouvert dans Excel en même temps — si l'import échoue avec un message "fichier en cours d'utilisation", fermer Excel puis réessayer
 - Si un nouveau fichier est importé, les données précédentes sont effacées et remplacées
 
 ---
@@ -258,7 +258,7 @@ Le rapport est généré au **format A3 paysage**. Il contient une page par atel
 | Message | Cause | Solution |
 |---|---|---|
 | "Format refusé" | Le fichier n'est pas au format `.xlsx` ou `.xls` | Vérifier l'extension du fichier |
-| "Impossible de lire le fichier" | Le fichier est ouvert dans Excel en même temps | Fermer Excel puis réessayer |
+| "Impossible de lire le fichier" | Excel a verrouillé le fichier (modifications non enregistrées) | Enregistrer ou fermer Excel puis réessayer |
 | Message d'erreur avec "introuvable" | Une feuille attendue est absente du fichier | Vérifier que le fichier correspond au format standard de production |
 
 ### Les menus de suivi restent grisés
