@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:AmiVanl2"
         mc:Ignorable="d"
         Title="EV Tracking — Baud Industries"
-        Icon="Resources/baudindustries.ico"
+        Icon="Resources/appicon.ico"
         Height="800" Width="1400">
 
     <Window.Resources>
