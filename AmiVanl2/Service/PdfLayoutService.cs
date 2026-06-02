@@ -600,21 +600,23 @@ namespace AmiVanl2.Service
                     gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, dataRowH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
 
-                    // 3 lignes fixes : Ref, AncienCode, Obj
-                    double refLineH = dataRowH / 3.0;
-                    string[] refLines = { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0") };
-                    for (int rl = 0; rl < 3; rl++)
-                        gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
-                            new XRect(x0 + 3, ry + rl * refLineH, colRefW - 6, refLineH),
-                            XStringFormats.CenterLeft);
-
-                    // Zone commentaire : toujours visible en bas (pour écriture manuelle)
-                    bool hasComment = !string.IsNullOrWhiteSpace(ligne.Commentaire);
+                    // Layout : Ref (bold) | Zone jaune commentaire | AncienCode | Obj
                     const double triCommentH = 14;
-                    double triCommentY = ry + dataRowH - triCommentH;
+                    double refNumH   = dataRowH * 0.26;
+                    double remaining = dataRowH - refNumH - triCommentH;
+                    double subLineH  = remaining / 2.0;
+
+                    // Ligne 1 : Numéro de référence
+                    gfx.DrawString(ligne.Reference, FBold, XBrushes.Black,
+                        new XRect(x0 + 3, ry, colRefW - 6, refNumH),
+                        XStringFormats.CenterLeft);
+
+                    // Ligne 2 : Zone jaune commentaire (toujours visible)
+                    double triCommentY = ry + refNumH;
+                    bool hasComment = !string.IsNullOrWhiteSpace(ligne.Commentaire);
                     XColor triCommentBg = hasComment
-                        ? XColor.FromArgb(255, 243, 160)
-                        : XColor.FromArgb(255, 252, 220);
+                        ? XColor.FromArgb(255, 243, 140)
+                        : XColor.FromArgb(255, 252, 215);
                     gfx.DrawRectangle(new XSolidBrush(triCommentBg), x0, triCommentY, colRefW, triCommentH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(220, 180, 60), 0.5), x0, triCommentY, colRefW, triCommentH);
                     if (hasComment)
@@ -622,6 +624,16 @@ namespace AmiVanl2.Service
                             new XSolidBrush(XColor.FromArgb(120, 60, 0)),
                             new XRect(x0 + 3, triCommentY, colRefW - 6, triCommentH),
                             XStringFormats.CenterLeft);
+
+                    // Ligne 3 : AncienCode
+                    gfx.DrawString(ligne.AncienCode, FTiny, XBrushes.Black,
+                        new XRect(x0 + 3, triCommentY + triCommentH, colRefW - 6, subLineH),
+                        XStringFormats.CenterLeft);
+
+                    // Ligne 4 : Objectif semaine
+                    gfx.DrawString("Obj: " + ligne.ObjSemaine.ToString("0"), FTiny, XBrushes.Black,
+                        new XRect(x0 + 3, triCommentY + triCommentH + subLineH, colRefW - 6, subLineH),
+                        XStringFormats.CenterLeft);
 
                     // Cellules journalieres
                     for (int d = 0; d < 8; d++)
@@ -832,13 +844,13 @@ namespace AmiVanl2.Service
                     bool hasCommentAM = !string.IsNullOrWhiteSpace(commentAssManu);
 
                     // Ref en haut de la cellule fusionnée
-                    double refNameH = dataRowH * 0.38;
+                    double refNameH = dataRowH * 0.26;
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
-                        new XRect(x0 + 3, ry + 2, colRefW - 6, refNameH), XStringFormats.CenterLeft);
+                        new XRect(x0 + 3, ry, colRefW - 6, refNameH), XStringFormats.CenterLeft);
 
                     // Zone commentaire juste sous le numéro de ref — toujours visible
                     const double commentZoneH = 14;
-                    double commentZoneY = ry + refNameH + 2;
+                    double commentZoneY = ry + refNameH;
 
                     // Lignes par operation
                     for (int opIdx = 0; opIdx < opCount; opIdx++)
@@ -971,28 +983,20 @@ namespace AmiVanl2.Service
             double x, double y, double w, double h, string commentaire)
         {
             bool hasComment = !string.IsNullOrWhiteSpace(commentaire);
-            XColor bg  = hasComment
-                ? XColor.FromArgb(255, 248, 220)   // jaune pâle ambré
-                : XColor.FromArgb(245, 245, 245);  // gris très clair si vide
-            XColor brd = hasComment
-                ? XColor.FromArgb(245, 158, 11)    // bordure ambre
-                : XColor.FromArgb(210, 210, 210);
 
-            gfx.DrawRectangle(new XSolidBrush(bg), x, y, w, h);
-            gfx.DrawRectangle(new XPen(brd, 0.8), x, y, w, h);
+            // Toujours jaune — vide ou rempli
+            gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 252, 215)), x, y, w, h);
+            gfx.DrawRectangle(new XPen(XColor.FromArgb(245, 158, 11), 0.8), x, y, w, h);
 
-            if (!hasComment) return;
-
-            // En-tête "Commentaire" en petit gris
-            double labelH = h * 0.28;
+            double labelH = h * 0.25;
             gfx.DrawString("Commentaire", FTiny, new XSolidBrush(XColor.FromArgb(180, 120, 20)),
                 new XRect(x + 4, y + 3, w - 8, labelH), XStringFormats.TopLeft);
 
-            // Texte commentaire en brun ambré, retour à la ligne automatique via troncature
-            gfx.DrawString(commentaire, FSmall,
-                new XSolidBrush(XColor.FromArgb(120, 50, 0)),
-                new XRect(x + 4, y + labelH + 4, w - 8, h - labelH - 8),
-                XStringFormats.TopLeft);
+            if (hasComment)
+                gfx.DrawString(commentaire, FSmall,
+                    new XSolidBrush(XColor.FromArgb(120, 50, 0)),
+                    new XRect(x + 4, y + labelH + 6, w - 8, h - labelH - 10),
+                    XStringFormats.TopLeft);
         }
 
         private void DessinerLegendeCouleurs(XGraphics gfx, double y)
