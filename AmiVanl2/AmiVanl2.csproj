@@ -194,7 +194,6 @@
     <Compile Include="Model\SuiviJointProduction.cs" />
     <Compile Include="Model\TriProduction.cs" />
     <Compile Include="Service\AssAutoService.cs" />
-    <Compile Include="Service\PdfExportService.cs" />
     <Compile Include="Service\PdfLayoutService.cs" />
     <Compile Include="Service\PresseService.cs" />
     <Compile Include="Service\SuiviAssManuelService.cs" />
