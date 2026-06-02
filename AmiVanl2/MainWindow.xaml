@@ -121,19 +121,19 @@
                     Style="{StaticResource MenuButtonStyle}" Click="BtnAccueilImport_Click"/>
 
 
-                <Button Content="Suivi PRESSE" Name="BtnSuiviPresse"
+                <Button Content="Suivi Presse" Name="BtnSuiviPresse"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviPresse_Click"/>
 
-                <Button Content="Suivi TRI" Name="BtnSuiviTri"
+                <Button Content="Suivi Tri" Name="BtnSuiviTri"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviTri_Click"/>
 
-                <Button Content="Suivi ASS AUTO" Name="BtnSuiviAssAuto"
+                <Button Content="Assemblage Auto" Name="BtnSuiviAssAuto"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssAuto_Click"/>
 
-                <Button Content="Suivi ASS MANUEL" Name="BtnSuiviAssManuel"
+                <Button Content="Assemblage Manuel" Name="BtnSuiviAssManuel"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssManuel_Click"/>
 
-                <Button Content="Suivi JOINTS" Name="BtnSuiviJoints"
+                <Button Content="Suivi Joints" Name="BtnSuiviJoints"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviJoints_Click"/>
 
                 <Button Content="Export PDF" Name="BtnExportPDF"

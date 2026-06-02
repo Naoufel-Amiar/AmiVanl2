@@ -128,12 +128,21 @@
 
 
         <!-- Bouton génération -->
-        <Grid Grid.Row="2" Margin="0,25,0,0">
+        <StackPanel Grid.Row="2" Margin="0,25,0,0" HorizontalAlignment="Center">
+
+            <TextBlock x:Name="TxtChargement"
+                       Text="Lecture du fichier Excel en cours…"
+                       FontFamily="Bahnschrift"
+                       FontSize="13"
+                       Foreground="#1976D2"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,12"
+                       Visibility="Collapsed"/>
 
             <Button Content="DÉMARRER LA GÉNÉRATION" Name="BtnGenerate"
                     Style="{StaticResource GenerateButtonStyle}" Click="BtnGenerate_Click"/>
 
-        </Grid>
+        </StackPanel>
 
     </Grid>
 

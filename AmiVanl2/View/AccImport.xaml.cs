@@ -125,6 +125,9 @@ namespace AmiVanl2.View
                     return;
                 }
 
+                BtnGenerate.IsEnabled = false;
+                TxtChargement.Visibility = Visibility.Visible;
+
                 PresseController presseController =
                     new PresseController();
 
@@ -206,6 +209,11 @@ namespace AmiVanl2.View
                     msg = "Une erreur est survenue lors de l'import :\n\n" + ex.Message;
 
                 MessageBox.Show(msg, "Erreur d'import", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                BtnGenerate.IsEnabled = true;
+                TxtChargement.Visibility = Visibility.Collapsed;
             }
         }
     }
