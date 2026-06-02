@@ -156,7 +156,8 @@ namespace AmiVanl2.View
                     StartAngle = 0,
                     InsideLabelPosition = 0.65,
                     OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
+                    InsideLabelFormat = "{2:0}%",
+                    FontSize = 11
                 };
 
             if (equ1 > 0)
@@ -227,7 +228,8 @@ namespace AmiVanl2.View
                     StartAngle = 0,
                     InsideLabelPosition = 0.7,
                     OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
+                    InsideLabelFormat = "{2:0}%",
+                    FontSize = 11
                 };
 
             if (production > 0)
