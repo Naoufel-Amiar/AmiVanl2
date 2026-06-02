@@ -600,34 +600,28 @@ namespace AmiVanl2.Service
                     gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, dataRowH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
 
+                    // 3 lignes fixes : Ref, AncienCode, Obj
+                    double refLineH = dataRowH / 3.0;
+                    string[] refLines = { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0") };
+                    for (int rl = 0; rl < 3; rl++)
+                        gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
+                            new XRect(x0 + 3, ry + rl * refLineH, colRefW - 6, refLineH),
+                            XStringFormats.CenterLeft);
+
+                    // Zone commentaire : toujours visible en bas (pour écriture manuelle)
                     bool hasComment = !string.IsNullOrWhiteSpace(ligne.Commentaire);
-                    int nbRefLines  = hasComment ? 4 : 3;
-                    double refLineH = dataRowH / nbRefLines;
-
-                    string[] refLines = hasComment
-                        ? new[] { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0"), ligne.Commentaire }
-                        : new[] { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0") };
-
-                    for (int rl = 0; rl < nbRefLines; rl++)
-                    {
-                        double lineY = ry + rl * refLineH;
-                        if (hasComment && rl == nbRefLines - 1)
-                        {
-                            // Bandeau ambré pour le commentaire
-                            gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 185)),
-                                x0, lineY, colRefW, refLineH);
-                            gfx.DrawString("» " + refLines[rl], FTiny,
-                                new XSolidBrush(XColor.FromArgb(146, 64, 14)),
-                                new XRect(x0 + 3, lineY, colRefW - 6, refLineH),
-                                XStringFormats.CenterLeft);
-                        }
-                        else
-                        {
-                            gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
-                                new XRect(x0 + 3, lineY, colRefW - 6, refLineH),
-                                XStringFormats.CenterLeft);
-                        }
-                    }
+                    const double triCommentH = 14;
+                    double triCommentY = ry + dataRowH - triCommentH;
+                    XColor triCommentBg = hasComment
+                        ? XColor.FromArgb(255, 243, 160)
+                        : XColor.FromArgb(255, 252, 220);
+                    gfx.DrawRectangle(new XSolidBrush(triCommentBg), x0, triCommentY, colRefW, triCommentH);
+                    gfx.DrawRectangle(new XPen(XColor.FromArgb(220, 180, 60), 0.5), x0, triCommentY, colRefW, triCommentH);
+                    if (hasComment)
+                        gfx.DrawString("» " + ligne.Commentaire, FTiny,
+                            new XSolidBrush(XColor.FromArgb(120, 60, 0)),
+                            new XRect(x0 + 3, triCommentY, colRefW - 6, triCommentH),
+                            XStringFormats.CenterLeft);
 
                     // Cellules journalieres
                     for (int d = 0; d < 8; d++)
@@ -837,12 +831,14 @@ namespace AmiVanl2.Service
                         .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? "";
                     bool hasCommentAM = !string.IsNullOrWhiteSpace(commentAssManu);
 
-                    // Ref sur la moitié haute de la 1ère ligne opération
+                    // Ref en haut de la cellule fusionnée
+                    double refNameH = dataRowH * 0.38;
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
-                        new XRect(x0 + 3, ry + 2, colRefW - 6, dataRowH * 0.45), XStringFormats.CenterLeft);
+                        new XRect(x0 + 3, ry + 2, colRefW - 6, refNameH), XStringFormats.CenterLeft);
 
+                    // Zone commentaire juste sous le numéro de ref — toujours visible
                     const double commentZoneH = 14;
-                    double commentZoneY = ry + refH - commentZoneH;
+                    double commentZoneY = ry + refNameH + 2;
 
                     // Lignes par operation
                     for (int opIdx = 0; opIdx < opCount; opIdx++)
@@ -855,10 +851,7 @@ namespace AmiVanl2.Service
                             ? "Op " + (opIdx + 1)
                             : op.Operation;
                         double labelY = opY + dataRowH * 0.72;
-                        double labelMaxBottom = (opIdx == opCount - 1)
-                            ? commentZoneY        // dernière op : s'arrête avant la zone commentaire
-                            : opY + dataRowH;
-                        double labelH2 = Math.Max(8, labelMaxBottom - labelY);
+                        double labelH2 = dataRowH * 0.28;
                         gfx.DrawString(opLabel + "  Obj: " + op.ObjectifSemaine.ToString("0"),
                             FTiny, new XSolidBrush(XColor.FromArgb(100, 60, 120)),
                             new XRect(x0 + 3, labelY, colRefW - 6, labelH2),
@@ -912,19 +905,17 @@ namespace AmiVanl2.Service
                         }
                     }
 
-                    // Zone commentaire : toujours affichée (jaune si texte, jaune pâle si vide)
+                    // Zone commentaire toujours visible — juste sous le numéro de ref
                     XColor commentBg = hasCommentAM
                         ? XColor.FromArgb(255, 243, 160)
                         : XColor.FromArgb(255, 252, 220);
                     gfx.DrawRectangle(new XSolidBrush(commentBg), x0, commentZoneY, colRefW, commentZoneH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(220, 180, 60), 0.5), x0, commentZoneY, colRefW, commentZoneH);
                     if (hasCommentAM)
-                    {
                         gfx.DrawString("» " + commentAssManu, FTiny,
                             new XSolidBrush(XColor.FromArgb(120, 60, 0)),
                             new XRect(x0 + 3, commentZoneY, colRefW - 6, commentZoneH),
                             XStringFormats.CenterLeft);
-                    }
 
                     // Bordure exterieure du groupe reference
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(110, 80, 130), 1.0), x0, ry, tableW, refH);
