@@ -841,19 +841,6 @@ namespace AmiVanl2.Service
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
                         new XRect(x0 + 3, ry + 2, colRefW - 6, dataRowH * 0.45), XStringFormats.CenterLeft);
 
-                    // Commentaire : bandeau ambré en bas de la cellule ref fusionnée
-                    if (hasCommentAM)
-                    {
-                        double commentH = Math.Min(refH * 0.18, 16);
-                        double commentY = ry + refH - commentH;
-                        gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 185)),
-                            x0, commentY, colRefW, commentH);
-                        gfx.DrawString("» " + commentAssManu, FTiny,
-                            new XSolidBrush(XColor.FromArgb(146, 64, 14)),
-                            new XRect(x0 + 3, commentY, colRefW - 6, commentH),
-                            XStringFormats.CenterLeft);
-                    }
-
                     // Lignes par operation
                     for (int opIdx = 0; opIdx < opCount; opIdx++)
                     {
@@ -915,6 +902,19 @@ namespace AmiVanl2.Service
                                 isWeekend: d == 5 || d == 6,
                                 objSemaine: opObj);
                         }
+                    }
+
+                    // Commentaire : dessiné en dernier pour rester au premier plan
+                    if (hasCommentAM)
+                    {
+                        double commentH = Math.Min(refH * 0.18, 16);
+                        double commentY = ry + refH - commentH;
+                        gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 185)),
+                            x0, commentY, colRefW, commentH);
+                        gfx.DrawString("» " + commentAssManu, FTiny,
+                            new XSolidBrush(XColor.FromArgb(146, 64, 14)),
+                            new XRect(x0 + 3, commentY, colRefW - 6, commentH),
+                            XStringFormats.CenterLeft);
                     }
 
                     // Bordure exterieure du groupe reference
