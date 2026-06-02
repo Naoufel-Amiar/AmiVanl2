@@ -832,7 +832,9 @@ namespace AmiVanl2.Service
 
                     // Ref + AncienCode en haut
                     var op0 = ops[0];
-                    string commentAssManu = op0.Commentaire ?? "";
+                    string commentAssManu = ops
+                        .Select(o => o.Commentaire ?? "")
+                        .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? "";
                     bool hasCommentAM = !string.IsNullOrWhiteSpace(commentAssManu);
 
                     // Ref sur la moitié haute de la 1ère ligne opération
