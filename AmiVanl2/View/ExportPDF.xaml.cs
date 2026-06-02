@@ -33,7 +33,7 @@ namespace AmiVanl2.View
                     Titre         = "Suivi Presse",
                     Fond          = new SolidColorBrush(Color.FromArgb(80, 206, 195, 193)),
                     NbElements    = AppData.Presses?.Count > 0
-                        ? AppData.Presses.Count + " ligne(s) — 2 pages (barres + camemberts)"
+                        ? AppData.Presses.Count + " ligne(s) — 1 page (barres + camembert + commentaire)"
                         : "",
                     Statut        = AppData.Presses?.Count > 0 ? "✓ Inclus" : "⚠ Aucune donnée",
                     CouleurStatut = AppData.Presses?.Count > 0
@@ -45,7 +45,7 @@ namespace AmiVanl2.View
                     Titre         = "Assemblage Automatique",
                     Fond          = new SolidColorBrush(Color.FromArgb(80, 246, 225, 207)),
                     NbElements    = AppData.AssAutos?.Count > 0
-                        ? AppData.AssAutos.Count + " ligne(s) — 2 pages (barres + camemberts)"
+                        ? AppData.AssAutos.Count + " ligne(s) — 1 page (barres + camembert + commentaire)"
                         : "",
                     Statut        = AppData.AssAutos?.Count > 0 ? "✓ Inclus" : "⚠ Aucune donnée",
                     CouleurStatut = AppData.AssAutos?.Count > 0
@@ -105,6 +105,16 @@ namespace AmiVanl2.View
 
         private void LancerGeneration(bool avecSeparatrices)
         {
+            if (!AppData.DonneesGenerees)
+            {
+                MessageBox.Show(
+                    "Aucune donnée importée.\n\nRetournez sur Accueil / Import, chargez votre fichier Excel puis cliquez sur \"Générer les données\".",
+                    "Export impossible",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             string suffixe = avecSeparatrices ? "Rapport_Complet" : "Rapport_Impression";
             SaveFileDialog dialog = new SaveFileDialog
             {

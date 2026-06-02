@@ -197,11 +197,15 @@ namespace AmiVanl2.View
 
             catch (Exception ex)
             {
-                string msg = ex.Message.Contains("used by another process")
-                    || ex.Message.Contains("en cours d'utilisation")
-                    ? "Impossible de lire le fichier.\nFermez-le dans Excel puis réessayez."
-                    : ex.Message;
-                MessageBox.Show(msg);
+                string msg;
+                if (ex.Message.Contains("used by another process") || ex.Message.Contains("en cours d'utilisation"))
+                    msg = "Impossible de lire le fichier.\nFermez-le dans Excel puis réessayez.";
+                else if (ex.Message.Contains("introuvable"))
+                    msg = ex.Message + "\n\nVérifiez que le fichier Excel correspond bien au format attendu.";
+                else
+                    msg = "Une erreur est survenue lors de l'import :\n\n" + ex.Message;
+
+                MessageBox.Show(msg, "Erreur d'import", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
