@@ -84,12 +84,26 @@ namespace AmiVanl2.Service
             {
                 PageSeparateur(doc, "SUIVI PRESSE", ColPresse);
                 PagePresseComplet(doc, presses);
+                var commentsPresse = presses
+                    .GroupBy(p => p.Reference)
+                    .Where(g => g.Any(p => !string.IsNullOrWhiteSpace(p.Commentaire)))
+                    .Select(g => (g.Key, g.First(p => !string.IsNullOrWhiteSpace(p.Commentaire)).Commentaire))
+                    .ToList();
+                if (commentsPresse.Count > 0)
+                    PageCommentaires(doc, "Presse — Commentaires de la semaine", ColPresse, commentsPresse);
             }
 
             if (assAutos.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE AUTOMATIQUE", ColAssAuto);
                 PageAssAutoComplet(doc, assAutos);
+                var commentsAssAuto = assAutos
+                    .GroupBy(a => a.Reference)
+                    .Where(g => g.Any(a => !string.IsNullOrWhiteSpace(a.Commentaire)))
+                    .Select(g => (g.Key, g.First(a => !string.IsNullOrWhiteSpace(a.Commentaire)).Commentaire))
+                    .ToList();
+                if (commentsAssAuto.Count > 0)
+                    PageCommentaires(doc, "Assemblage Automatique — Commentaires de la semaine", ColAssAuto, commentsAssAuto);
             }
 
             if (joints.Count > 0)
@@ -98,6 +112,12 @@ namespace AmiVanl2.Service
                 PageTableEquipes(doc,
                     "Joints — Suivi journalier par equipe et par reference",
                     ColJoints, BuildLignesJoints(joints));
+                var commentsJoints = joints
+                    .Where(j => !string.IsNullOrWhiteSpace(j.Commentaire))
+                    .Select(j => (j.Reference, j.Commentaire))
+                    .ToList();
+                if (commentsJoints.Count > 0)
+                    PageCommentaires(doc, "Joints — Commentaires de la semaine", ColJoints, commentsJoints);
             }
 
             if (tris.Count > 0)
@@ -106,12 +126,25 @@ namespace AmiVanl2.Service
                 PageTableEquipes(doc,
                     "Tri — Suivi journalier par equipe et par reference",
                     ColTri, BuildLignesTri(tris));
+                var commentsTri = tris
+                    .Where(t => !string.IsNullOrWhiteSpace(t.Commentaire))
+                    .Select(t => (t.Reference, t.Commentaire))
+                    .ToList();
+                if (commentsTri.Count > 0)
+                    PageCommentaires(doc, "Tri — Commentaires de la semaine", ColTri, commentsTri);
             }
 
             if (assManuels.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
                 PageAssManuelTable(doc, assManuels);
+                var commentsAssManu = assManuels
+                    .GroupBy(m => m.Reference)
+                    .Where(g => g.Any(m => !string.IsNullOrWhiteSpace(m.Commentaire)))
+                    .Select(g => (g.Key, g.First(m => !string.IsNullOrWhiteSpace(m.Commentaire)).Commentaire))
+                    .ToList();
+                if (commentsAssManu.Count > 0)
+                    PageCommentaires(doc, "Assemblage Manuel — Commentaires de la semaine", ColAssManuel, commentsAssManu);
             }
 
             doc.Save(cheminPdf);
