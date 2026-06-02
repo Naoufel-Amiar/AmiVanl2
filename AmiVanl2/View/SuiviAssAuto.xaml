@@ -10,6 +10,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="70"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="1.6*"/>
         </Grid.RowDefinitions>
 
@@ -43,11 +44,45 @@
             
         </StackPanel>
 
-        <Border Grid.Row="1"
+        <!-- COMMENTAIRES -->
+        <Border
+            x:Name="PanelCommentaires"
+            Grid.Row="1"
+            Background="#FFF8E1"
+            BorderBrush="#F59E0B"
+            BorderThickness="1"
+            CornerRadius="6"
+            Margin="0,0,0,8"
+            Padding="12,8"
+            Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock
+                    Text="💬 Commentaires de la semaine"
+                    FontSize="13"
+                    FontFamily="Bahnschrift"
+                    FontWeight="SemiBold"
+                    Foreground="#92400E"
+                    Margin="0,0,0,4"/>
+                <ItemsControl x:Name="ListeCommentaires">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Text="{Binding}"
+                                FontSize="12"
+                                FontFamily="Bahnschrift"
+                                Foreground="#78350F"
+                                TextWrapping="Wrap"
+                                Margin="0,1"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2"
                 Background="#F6E1CF"
                 CornerRadius="15"
                 Padding="30"
-                MinHeight="900"
                 Margin="0,10,0,0">
 
             <Grid>
@@ -60,10 +95,10 @@
 
                 <Grid Margin="0,45,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="165"/>
-                        <RowDefinition Height="95"/>
-                        <RowDefinition Height="165"/>
-                        <RowDefinition Height="115"/>
+                        <RowDefinition Height="1.65*"/>
+                        <RowDefinition Height="0.95*"/>
+                        <RowDefinition Height="1.65*"/>
+                        <RowDefinition Height="1.15*"/>
                     </Grid.RowDefinitions>
 
                     <oxy:PlotView x:Name="PlotAssAutoGroupe1" Grid.Row="0"/>

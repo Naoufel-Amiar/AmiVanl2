@@ -7,9 +7,6 @@ namespace AmiVanl2.Model
         // Fichier importé
         public static string ExcelFilePath { get; set; } = "";
 
-        // Objectif saisi dans l'accueil
-        public static string ObjectifProduction { get; set; } = "";
-
         // Données récupérées feuille PRESSE
         public static List<PresseProduction> Presses { get; set; }
             = new List<PresseProduction>();
@@ -53,8 +50,6 @@ namespace AmiVanl2.Model
             Tris.Clear();
 
             ExcelFilePath = "";
-
-            ObjectifProduction = "";
 
             DonneesGenerees = false;
         }

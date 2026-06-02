@@ -25,7 +25,6 @@ namespace AmiVanl2.View
     /// </summary>
     public partial class AccImport : UserControl
     {
-        private string selectedFilePath = "";
         public AccImport()
         {
             InitializeComponent();
@@ -97,8 +96,6 @@ namespace AmiVanl2.View
 
             AppData.Reset();
 
-            selectedFilePath = filePath;
-
             AppData.ExcelFilePath = filePath;
 
             MainWindow fenetre = Application.Current.MainWindow as MainWindow;
@@ -115,21 +112,6 @@ namespace AmiVanl2.View
                 Brushes.Green;
         }
 
-        private void TxtObjectifProduction_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(
-                TxtObjectifProduction.Text))
-            {
-                PlaceholderObjectif.Visibility =
-                    Visibility.Visible;
-            }
-            else
-            {
-                PlaceholderObjectif.Visibility =
-                    Visibility.Collapsed;
-            }
-        }
-
         private async void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -142,6 +124,9 @@ namespace AmiVanl2.View
 
                     return;
                 }
+
+                BtnGenerate.IsEnabled = false;
+                PanelChargement.Visibility = Visibility.Visible;
 
                 PresseController presseController =
                     new PresseController();
@@ -173,30 +158,6 @@ namespace AmiVanl2.View
                 int nbAssManu =
                     await assManuelController.ChargerAssManuelsAsync();
 
-                //TEST DE VERIFICATION DES DONNEES RECUPEREES////////////////////////////////////////////////
-                if (AppData.Presses.Count > 0)
-                {
-                    PresseProduction premiereLigne = AppData.Presses[0];
-
-                    MessageBox.Show(
-                        "Première ligne récupérée :\n\n" +
-                        "Référence : " + premiereLigne.Reference + "\n" +
-                        "Ancien code : " + premiereLigne.AncienCode + "\n" +
-                        "Equipe : " + premiereLigne.Equipe + "\n" +
-                        "Machine : " + premiereLigne.Machine + "\n" +
-                        "Obj semaine : " + premiereLigne.ObjectifSemaine + "\n" +
-                        "Lundi : " + premiereLigne.ProdLundi + "\n" +
-                        "Mardi : " + premiereLigne.ProdMardi + "\n" +
-                        "Mercredi : " + premiereLigne.ProdMercredi + "\n" +
-                        "Jeudi : " + premiereLigne.ProdJeudi + "\n" +
-                        "Vendredi : " + premiereLigne.ProdVendredi + "\n" +
-                        "Samedi : " + premiereLigne.ProdSamedi + "\n" +
-                        "Dimanche : " + premiereLigne.ProdDimanche + "\n" +
-                        "Total : " + premiereLigne.TotalProduction
-                    );
-                    
-                }
-
                 AppData.DonneesGenerees = true;
 
                 MainWindow fenetre =
@@ -204,30 +165,55 @@ namespace AmiVanl2.View
 
                 fenetre?.MettreAJourNavigation();
 
+                int refPresseAvecProd = AppData.Presses
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Sum(p => p.TotalProduction) > 0);
+
+                int refAssAutoAvecProd = AppData.AssAutos
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Sum(p => p.TotalProduction) > 0);
+
+                int refJointsAvecProd = AppData.Joints
+                    .Count(p => p.TotalProduction > 0);
+
+                int refTrisAvecProd = AppData.Tris
+                    .Count(p => p.TotalProduction > 0);
+
+                int refAssManuAvecProd = AppData.AssManuels
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Any(p =>
+                        p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
+                        p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
+                        p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
+                        p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
+                        p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0));
+
                 MessageBox.Show(
-                    nb +
-                    " lignes presse analysées.\n" +
-
-                    nbAssAuto +
-                    " lignes assemblage automatique analysées.\n" +
-
-                    nbJoints +
-                    " lignes joints analysées.\n" +
-
-                    nbTris +
-                    " lignes tri analysées.\n" +
-
-                    nbAssManu +
-                    " lignes assemblage manuel analysées."
+                    "✔ Données chargées avec succès !\n\n" +
+                    "PRESSE        : " + refPresseAvecProd + " réf. en production  (" + nb + " lignes lues)\n" +
+                    "ASS. AUTO  : " + refAssAutoAvecProd + " réf. en production  (" + nbAssAuto + " lignes lues)\n" +
+                    "JOINTS         : " + refJointsAvecProd + " réf. en production  (" + nbJoints + " lignes lues)\n" +
+                    "TRI                : " + refTrisAvecProd + " réf. en production  (" + nbTris + " lignes lues)\n" +
+                    "ASS. MANU : " + refAssManuAvecProd + " réf. en production  (" + nbAssManu + " lignes lues)"
                 );
-                //////////////////////////////////////////////////////////////////////////////////////////
             }
 
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    ex.Message
-                );
+                string msg;
+                if (ex.Message.Contains("used by another process") || ex.Message.Contains("en cours d'utilisation"))
+                    msg = "Impossible de lire le fichier.\nFermez-le dans Excel puis réessayez.";
+                else if (ex.Message.Contains("introuvable"))
+                    msg = ex.Message + "\n\nVérifiez que le fichier Excel correspond bien au format attendu.";
+                else
+                    msg = "Une erreur est survenue lors de l'import :\n\n" + ex.Message;
+
+                MessageBox.Show(msg, "Erreur d'import", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                BtnGenerate.IsEnabled = true;
+                PanelChargement.Visibility = Visibility.Collapsed;
             }
         }
     }

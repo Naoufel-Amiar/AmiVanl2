@@ -22,11 +22,29 @@ namespace AmiVanl2.View
             if (AppData.Presses == null || AppData.Presses.Count == 0)
                 return;
 
-            List<PresseProduction> groupe1 = AppData.Presses.Take(4).ToList();
-            List<PresseProduction> groupe2 = AppData.Presses.Skip(4).Take(4).ToList();
+            var refsDistinctes = AppData.Presses
+                .GroupBy(p => new { p.Reference, p.Machine })
+                .Select(g => g.First())
+                .Where(p => p.TotalProduction > 0 || p.ObjectifSemaine > 0)
+                .ToList();
+            int moitie = (refsDistinctes.Count + 1) / 2;
+            List<PresseProduction> groupe1 = refsDistinctes.Take(moitie).ToList();
+            List<PresseProduction> groupe2 = refsDistinctes.Skip(moitie).ToList();
 
             ChargerGraphiqueGroupe(groupe1, PlotPresseGroupe1, LegendPresseGroupe1, "Production presse — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotPresseGroupe2, LegendPresseGroupe2, "Production presse — Groupe 2");
+
+            var commentaires = AppData.Presses
+                .Where(p => !string.IsNullOrWhiteSpace(p.Commentaire))
+                .GroupBy(p => p.Reference)
+                .Select(g => g.Key + " : " + g.First().Commentaire)
+                .ToList();
+
+            if (commentaires.Count > 0)
+            {
+                ListeCommentaires.ItemsSource = commentaires;
+                PanelCommentaires.Visibility = Visibility.Visible;
+            }
         }
 
         private void ChargerGraphiqueGroupe(List<PresseProduction> groupe,OxyPlot.Wpf.PlotView plot, Grid legend, string titre)
@@ -168,11 +186,11 @@ namespace AmiVanl2.View
 
         private void BtnGoToPage2Presse_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            Window fenetre =
-      Window.GetWindow(this);
+            Window fenetre = Window.GetWindow(this);
 
             if (fenetre is MainWindow mainWindow)
             {
+                mainWindow.MarquerBoutonActif(mainWindow.BtnSuiviPresse);
                 mainWindow.MainContent.Children.Clear();
 
                 mainWindow.MainContent.Children.Add(

@@ -1,0 +1,179 @@
+<UserControl x:Class="AmiVanl2.View.WelcomePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="50,40,50,40">
+
+            <!-- En-tête -->
+            <StackPanel Margin="0,0,0,35">
+                <TextBlock Text="Bienvenue sur EV Tracking"
+                           FontSize="32"
+                           FontFamily="Bahnschrift"
+                           FontWeight="Bold"
+                           Foreground="#1E1E1E"/>
+                <TextBlock Text="Outil de suivi de production hebdomadaire — Baud Industries"
+                           FontSize="15"
+                           FontFamily="Bahnschrift"
+                           Foreground="#666666"
+                           Margin="0,6,0,0"/>
+                <Rectangle Height="3" Fill="#1E88E5" Width="120"
+                           HorizontalAlignment="Left" Margin="0,14,0,0" RadiusX="2" RadiusY="2"/>
+            </StackPanel>
+
+            <!-- Présentation -->
+            <Border Background="#F0F4FF" CornerRadius="12" Padding="24,18" Margin="0,0,0,35">
+                <StackPanel>
+                    <TextBlock Text="A quoi sert ce logiciel ?"
+                               FontSize="17"
+                               FontFamily="Bahnschrift"
+                               FontWeight="Bold"
+                               Foreground="#1E3A5F"
+                               Margin="0,0,0,10"/>
+                    <TextBlock TextWrapping="Wrap"
+                               FontFamily="Bahnschrift"
+                               FontSize="14"
+                               Foreground="#333333"
+                               LineHeight="22">
+                        EV Tracking lit un fichier Excel de production hebdomadaire et génère automatiquement
+                        des graphiques de suivi pour chaque atelier : Presse, Assemblage Automatique,
+                        Assemblage Manuel, Tri et Joints.&#x0a;&#x0a;
+                        En fin de semaine, l'outil produit un rapport PDF complet au format A3
+                        avec les courbes, camemberts et tableaux de chaque feuille — prêt à imprimer
+                        ou à envoyer.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Guide étapes -->
+            <TextBlock Text="Comment utiliser EV Tracking ?"
+                       FontSize="19"
+                       FontFamily="Bahnschrift"
+                       FontWeight="Bold"
+                       Foreground="#1E1E1E"
+                       Margin="0,0,0,20"/>
+
+            <!-- Etape 1 -->
+            <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="54"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="#1E88E5" CornerRadius="27" Width="44" Height="44"
+                        HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <TextBlock Text="1" Foreground="White" FontSize="20"
+                               FontFamily="Bahnschrift" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                    <TextBlock Text="Importer le fichier Excel"
+                               FontSize="16" FontFamily="Bahnschrift" FontWeight="Bold"
+                               Foreground="#1E3A5F"/>
+                    <TextBlock TextWrapping="Wrap" FontFamily="Bahnschrift" FontSize="13"
+                               Foreground="#555555" Margin="0,5,0,0" LineHeight="20">
+                        Clique sur  « Accueil/Import »  dans le menu à gauche.
+                        Glisse-dépose ton fichier Excel de la semaine dans la zone prévue,
+                        ou utilise le bouton « Parcourir » pour le sélectionner manuellement.
+                        Clique ensuite sur  « DÉMARRER LA GÉNÉRATION »  — le logiciel lit
+                        toutes les feuilles et déverrouille les menus de suivi.
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
+            <!-- Flèche -->
+            <TextBlock Text="↓" FontSize="22" Foreground="#AAAAAA"
+                       HorizontalAlignment="Left" Margin="16,0,0,10"/>
+
+            <!-- Etape 2 -->
+            <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="54"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="#1E88E5" CornerRadius="27" Width="44" Height="44"
+                        HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <TextBlock Text="2" Foreground="White" FontSize="20"
+                               FontFamily="Bahnschrift" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                    <TextBlock Text="Explorer les suivis par atelier"
+                               FontSize="16" FontFamily="Bahnschrift" FontWeight="Bold"
+                               Foreground="#1E3A5F"/>
+                    <TextBlock TextWrapping="Wrap" FontFamily="Bahnschrift" FontSize="13"
+                               Foreground="#555555" Margin="0,5,0,0" LineHeight="20">
+                        Les 5 boutons du menu deviennent actifs après import :&#x0a;
+                        ·  Suivi Presse  — barres journalières par référence et machine&#x0a;
+                        ·  Suivi Tri  — camemberts par équipe pour chaque référence&#x0a;
+                        ·  Assemblage Auto  — barres journalières par référence et machine&#x0a;
+                        ·  Assemblage Manuel  — tableau par équipe et par opération&#x0a;
+                        ·  Suivi Joints  — camemberts par équipe pour chaque référence&#x0a;&#x0a;
+                        Les barres sont  vertes  si l'objectif est atteint,  rouges  sinon.
+                        Clique sur une référence pour afficher son détail.
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
+            <!-- Flèche -->
+            <TextBlock Text="↓" FontSize="22" Foreground="#AAAAAA"
+                       HorizontalAlignment="Left" Margin="16,0,0,10"/>
+
+            <!-- Etape 3 -->
+            <Grid Margin="0,0,0,35">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="54"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="#1E88E5" CornerRadius="27" Width="44" Height="44"
+                        HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <TextBlock Text="3" Foreground="White" FontSize="20"
+                               FontFamily="Bahnschrift" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                    <TextBlock Text="Générer le rapport PDF"
+                               FontSize="16" FontFamily="Bahnschrift" FontWeight="Bold"
+                               Foreground="#1E3A5F"/>
+                    <TextBlock TextWrapping="Wrap" FontFamily="Bahnschrift" FontSize="13"
+                               Foreground="#555555" Margin="0,5,0,0" LineHeight="20">
+                        Clique sur  « Export PDF »  dans le menu.
+                        Choisis l'emplacement de sauvegarde et clique sur  « Générer le PDF ».
+                        Le rapport A3 paysage est créé automatiquement avec une page par atelier :
+                        graphiques en barres, camemberts de taux d'atteinte et tableaux récapitulatifs.
+                        Le fichier est prêt à imprimer ou à partager.
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
+            <!-- Bouton commencer -->
+            <Button Content="Commencer — Accueil / Import"
+                    Width="300" Height="52"
+                    HorizontalAlignment="Left"
+                    Click="BtnCommencer_Click"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="#1E88E5" CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#0D47A1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <Button.Foreground>White</Button.Foreground>
+                <Button.FontFamily>Bahnschrift</Button.FontFamily>
+                <Button.FontSize>15</Button.FontSize>
+                <Button.FontWeight>Bold</Button.FontWeight>
+            </Button>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

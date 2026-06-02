@@ -12,6 +12,7 @@ namespace AmiVanl2.View
     public partial class SuiviJoints : UserControl
     {
         private JointController jointController;
+        private Button _boutonSelectionne;
 
         public SuiviJoints()
         {
@@ -29,10 +30,14 @@ namespace AmiVanl2.View
                 await jointController.ChargerJointsAsync();
             }
 
-            ListeReferences.ItemsSource = AppData.Joints;
+            var refsAvecProd = AppData.Joints
+                .Where(j => j.TotalProduction > 0)
+                .ToList();
+
+            ListeReferences.ItemsSource = refsAvecProd;
 
             JointProduction premiereReference =
-                AppData.Joints.FirstOrDefault();
+                refsAvecProd.FirstOrDefault() ?? AppData.Joints.FirstOrDefault();
 
             if (premiereReference == null)
             {
@@ -45,21 +50,18 @@ namespace AmiVanl2.View
 
         private void BtnReference_Click(object sender, RoutedEventArgs e)
         {
-            Button bouton =
-                sender as Button;
+            Button bouton = sender as Button;
+            if (bouton == null) return;
 
-            if (bouton == null)
-            {
-                return;
-            }
+            JointProduction joint = bouton.Tag as JointProduction;
+            if (joint == null) return;
 
-            JointProduction joint =
-                bouton.Tag as JointProduction;
+            if (_boutonSelectionne != null)
+                _boutonSelectionne.Background = System.Windows.Media.Brushes.Transparent;
 
-            if (joint == null)
-            {
-                return;
-            }
+            bouton.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(37, 99, 235));
+            _boutonSelectionne = bouton;
 
             ChargerReference(joint);
         }
@@ -71,6 +73,16 @@ namespace AmiVanl2.View
                 + joint.Reference
                 + " | Ancien code : "
                 + joint.AncienCode;
+
+            if (!string.IsNullOrWhiteSpace(joint.Commentaire))
+            {
+                TxtCommentaire.Text = joint.Commentaire;
+                PanelCommentaire.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelCommentaire.Visibility = Visibility.Collapsed;
+            }
 
             List<PlotModel> camemberts =
                 new List<PlotModel>();
@@ -154,7 +166,9 @@ namespace AmiVanl2.View
                     StartAngle = 0,
                     InsideLabelPosition = 0.65,
                     OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
+                    InsideLabelFormat = "{2:0}%",
+                    FontSize = 11,
+                    Diameter = 0.7
                 };
 
             if (equ1 > 0)
@@ -225,7 +239,9 @@ namespace AmiVanl2.View
                     StartAngle = 0,
                     InsideLabelPosition = 0.7,
                     OutsideLabelFormat = "{1}: {0}",
-                    InsideLabelFormat = "{2:0}%"
+                    InsideLabelFormat = "{2:0}%",
+                    FontSize = 11,
+                    Diameter = 0.7
                 };
 
             if (production > 0)

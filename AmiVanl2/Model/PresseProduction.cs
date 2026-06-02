@@ -37,10 +37,5 @@ namespace AmiVanl2.Model
         public double TotalProduction =>
             ProdLundi + ProdMardi + ProdMercredi + ProdJeudi + ProdVendredi + ProdSamedi + ProdDimanche;
 
-        public double EcartObjectif =>
-            TotalProduction - ObjectifSemaine;
-
-        public double TauxAtteinte =>
-            ObjectifSemaine == 0 ? 0 : TotalProduction / ObjectifSemaine * 100;
     }
 }

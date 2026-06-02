@@ -8,9 +8,41 @@
              d:DesignHeight="700"
              d:DesignWidth="1200">
 
+    <UserControl.Resources>
+        <Style x:Key="RefButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="4,3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="#1E3A5F"
+                                CornerRadius="20"
+                                Padding="18,8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Background="White" Margin="20">
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -31,11 +63,36 @@
             FontSize="18"
             FontFamily="Bahnschrift"
             FontWeight="SemiBold"
-            Margin="0,15,0,15"
+            Margin="0,15,0,5"
             HorizontalAlignment="Center"/>
 
-        <ScrollViewer
+        <Border
+            x:Name="PanelCommentaire"
             Grid.Row="2"
+            Background="#FFF8E1"
+            BorderBrush="#F59E0B"
+            BorderThickness="1"
+            CornerRadius="6"
+            Margin="20,0,20,10"
+            Padding="12,8"
+            Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    Text="💬 "
+                    FontSize="14"
+                    VerticalAlignment="Top"
+                    Margin="0,1,4,0"/>
+                <TextBlock
+                    x:Name="TxtCommentaire"
+                    FontSize="13"
+                    FontFamily="Bahnschrift"
+                    Foreground="#92400E"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer
+            Grid.Row="3"
             HorizontalScrollBarVisibility="Auto"
             VerticalScrollBarVisibility="Disabled"
             Margin="0,0,0,15">
@@ -55,12 +112,7 @@
                         <Button
                             Content="{Binding Reference}"
                             Tag="{Binding}"
-                            Margin="5"
-                            Padding="14,7"
-                            FontSize="13"
-                            FontFamily="Bahnschrift"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
+                            Style="{StaticResource RefButtonStyle}"
                             Click="BtnReference_Click"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -69,7 +121,7 @@
         </ScrollViewer>
 
         <ScrollViewer
-            Grid.Row="3"
+            Grid.Row="4"
             VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Disabled">
 
@@ -84,8 +136,8 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border
-                            Width="420"
-                            Height="350"
+                            Width="500"
+                            Height="400"
                             Margin="12"
                             BorderBrush="#DDD"
                             BorderThickness="1"

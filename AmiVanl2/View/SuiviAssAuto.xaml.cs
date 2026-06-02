@@ -22,11 +22,29 @@ namespace AmiVanl2.View
             if (AppData.AssAutos == null || AppData.AssAutos.Count == 0)
                 return;
 
-            List<AssAutoProduction> groupe1 = AppData.AssAutos.Take(4).ToList();
-            List<AssAutoProduction> groupe2 = AppData.AssAutos.Skip(4).Take(4).ToList();
+            var refsDistinctes = AppData.AssAutos
+                .GroupBy(p => new { p.Reference, p.Machine })
+                .Select(g => g.First())
+                .Where(p => p.TotalProduction > 0 || p.ObjectifSemaine > 0)
+                .ToList();
+            int moitie = (refsDistinctes.Count + 1) / 2;
+            List<AssAutoProduction> groupe1 = refsDistinctes.Take(moitie).ToList();
+            List<AssAutoProduction> groupe2 = refsDistinctes.Skip(moitie).ToList();
 
             ChargerGraphiqueGroupe(groupe1, PlotAssAutoGroupe1, LegendAssAutoGroupe1, "Assemblage automatique — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotAssAutoGroupe2, LegendAssAutoGroupe2, "Assemblage automatique — Groupe 2");
+
+            var commentaires = AppData.AssAutos
+                .Where(p => !string.IsNullOrWhiteSpace(p.Commentaire))
+                .GroupBy(p => p.Reference)
+                .Select(g => g.Key + " : " + g.First().Commentaire)
+                .ToList();
+
+            if (commentaires.Count > 0)
+            {
+                ListeCommentaires.ItemsSource = commentaires;
+                PanelCommentaires.Visibility = Visibility.Visible;
+            }
         }
 
         private void ChargerGraphiqueGroupe(List<AssAutoProduction> groupe, OxyPlot.Wpf.PlotView plot, Grid legend, string titre)
@@ -174,6 +192,7 @@ namespace AmiVanl2.View
 
             if (fenetre is MainWindow mainWindow)
             {
+                mainWindow.MarquerBoutonActif(mainWindow.BtnSuiviAssAuto);
                 mainWindow.MainContent.Children.Clear();
                 mainWindow.MainContent.Children.Add(new SuiviAssAuto2());
             }

@@ -8,6 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>AmiVanl2</RootNamespace>
     <AssemblyName>AmiVanl2</AssemblyName>
+    <ApplicationIcon>Resources\appicon.ico</ApplicationIcon>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -49,15 +50,7 @@
     <Reference Include="HarfBuzzSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>..\packages\HarfBuzzSharp.8.3.1.1\lib\net462\HarfBuzzSharp.dll</HintPath>
     </Reference>
-    <Reference Include="LiveChartsCore, Version=2.0.4.0, Culture=neutral, PublicKeyToken=cc92a3e13d40c573, processorArchitecture=MSIL">
-      <HintPath>..\packages\LiveChartsCore.2.0.4\lib\net462\LiveChartsCore.dll</HintPath>
-    </Reference>
-    <Reference Include="LiveChartsCore.SkiaSharpView, Version=2.0.4.0, Culture=neutral, PublicKeyToken=cc92a3e13d40c573, processorArchitecture=MSIL">
-      <HintPath>..\packages\LiveChartsCore.SkiaSharpView.2.0.4\lib\net462\LiveChartsCore.SkiaSharpView.dll</HintPath>
-    </Reference>
-    <Reference Include="LiveChartsCore.SkiaSharpView.WPF, Version=2.0.4.0, Culture=neutral, PublicKeyToken=cc92a3e13d40c573, processorArchitecture=MSIL">
-      <HintPath>..\packages\LiveChartsCore.SkiaSharpView.WPF.2.0.4\lib\net462\LiveChartsCore.SkiaSharpView.WPF.dll</HintPath>
-    </Reference>
+
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -201,13 +194,16 @@
     <Compile Include="Model\SuiviJointProduction.cs" />
     <Compile Include="Model\TriProduction.cs" />
     <Compile Include="Service\AssAutoService.cs" />
-    <Compile Include="Service\PdfExportService.cs" />
+    <Compile Include="Service\PdfLayoutService.cs" />
     <Compile Include="Service\PresseService.cs" />
     <Compile Include="Service\SuiviAssManuelService.cs" />
     <Compile Include="Service\SuiviJointService.cs" />
     <Compile Include="Service\SuiviTriService.cs" />
     <Compile Include="View\AccImport.xaml.cs">
       <DependentUpon>AccImport.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\WelcomePage.xaml.cs">
+      <DependentUpon>WelcomePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ExportPDF.xaml.cs">
       <DependentUpon>ExportPDF.xaml</DependentUpon>
@@ -246,6 +242,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\AccImport.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\WelcomePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -312,6 +312,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ressource\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\appicon.ico" />
+    <Resource Include="Resources\baudindustries.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />

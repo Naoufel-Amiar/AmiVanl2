@@ -37,7 +37,7 @@ namespace AmiVanl2.View
             AppData.Presses
             .GroupBy(p => p.Reference)
             .Select(g => g.First())
-            .Take(7)
+            .Where(p => p.TotalProduction > 0 || p.ObjectifSemaine > 0)
             .ToList();
 
             foreach (PresseProduction presse in presses)

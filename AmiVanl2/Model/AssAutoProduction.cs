@@ -34,10 +34,5 @@ namespace AmiVanl2.Model
         public double ObjectifJournalierCalcule =>
             ObjectifJour > 0 ? ObjectifJour : ObjectifSemaine / 5.0;
 
-        public double EcartObjectif =>
-            TotalProduction - ObjectifSemaine;
-
-        public double TauxAtteinte =>
-            ObjectifSemaine == 0 ? 0 : TotalProduction / ObjectifSemaine * 100;
     }
 }

@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmiVanl2"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1400">
+        Title="EV Tracking — Baud Industries"
+        Icon="Resources/appicon.ico"
+        Height="800" Width="1400">
 
     <Window.Resources>
 
@@ -73,12 +75,21 @@
             Padding="15">
 
             <Grid>
-                <TextBlock Text="EV TRACKING"
-                       Foreground="White"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"/>
+                <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left">
+                    <Image Source="Resources/baudindustries.ico"
+                           Height="46"
+                           Width="46"
+                           Margin="0,0,12,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="EV Tracking"
+                           Foreground="White"
+                           FontSize="22"
+                           FontFamily="Bahnschrift"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <TextBlock Text="Projet réalisé par Naoufel Amiar"
                        Foreground="White"
@@ -110,19 +121,19 @@
                     Style="{StaticResource MenuButtonStyle}" Click="BtnAccueilImport_Click"/>
 
 
-                <Button Content="Suivi PRESSE" Name="BtnSuiviPresse"
+                <Button Content="Suivi Presse" Name="BtnSuiviPresse"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviPresse_Click"/>
 
-                <Button Content="Suivi TRI" Name="BtnSuiviTri"
+                <Button Content="Suivi Tri" Name="BtnSuiviTri"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviTri_Click"/>
 
-                <Button Content="Suivi ASS AUTO" Name="BtnSuiviAssAuto"
+                <Button Content="Assemblage Auto" Name="BtnSuiviAssAuto"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssAuto_Click"/>
 
-                <Button Content="Suivi ASS MANUEL" Name="BtnSuiviAssManuel"
+                <Button Content="Assemblage Manuel" Name="BtnSuiviAssManuel"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssManuel_Click"/>
 
-                <Button Content="Suivi JOINTS" Name="BtnSuiviJoints"
+                <Button Content="Suivi Joints" Name="BtnSuiviJoints"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviJoints_Click"/>
 
                 <Button Content="Export PDF" Name="BtnExportPDF"
