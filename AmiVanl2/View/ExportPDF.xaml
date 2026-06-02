@@ -85,14 +85,21 @@
             </StackPanel>
         </Border>
 
-        <!-- MESSAGE DE STATUT -->
-        <TextBlock x:Name="TxtStatut"
-                   Grid.Row="2"
-                   FontFamily="Bahnschrift"
-                   FontSize="13"
-                   Foreground="#555555"
-                   Margin="0,2,0,6"
-                   TextWrapping="Wrap"/>
+        <!-- BARRE DE PROGRESSION -->
+        <StackPanel x:Name="PanelChargement"
+                    Grid.Row="2"
+                    Visibility="Collapsed"
+                    Margin="0,4,0,6">
+            <TextBlock x:Name="TxtStatut"
+                       FontFamily="Bahnschrift"
+                       FontSize="13"
+                       Foreground="#2F5D8C"
+                       Margin="0,0,0,8"/>
+            <ProgressBar IsIndeterminate="True"
+                         Height="6"
+                         Foreground="#2F5D8C"
+                         Background="#DDDDDD"/>
+        </StackPanel>
 
         <!-- BOUTONS GÉNÉRER -->
         <Grid Grid.Row="3">

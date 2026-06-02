@@ -129,7 +129,8 @@ namespace AmiVanl2.View
 
             BtnPdfGenerate.IsEnabled = false;
             BtnPdfImprimer.IsEnabled = false;
-            TxtStatut.Text = "Génération en cours… Veuillez patienter.";
+            TxtStatut.Text = "Génération du rapport PDF en cours…";
+            PanelChargement.Visibility = Visibility.Visible;
 
             Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
 
@@ -151,7 +152,7 @@ namespace AmiVanl2.View
                 {
                     BtnPdfGenerate.IsEnabled = true;
                     BtnPdfImprimer.IsEnabled = true;
-                    TxtStatut.Text = "";
+                    PanelChargement.Visibility = Visibility.Collapsed;
 
                     if (erreur == null)
                     {
