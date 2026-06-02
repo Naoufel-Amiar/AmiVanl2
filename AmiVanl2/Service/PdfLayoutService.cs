@@ -601,7 +601,7 @@ namespace AmiVanl2.Service
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
 
                     // Layout : Ref (bold) | Zone jaune commentaire | AncienCode | Obj
-                    const double triCommentH = 14;
+                    const double triCommentH = 30;
                     double refNumH   = dataRowH * 0.26;
                     double remaining = dataRowH - refNumH - triCommentH;
                     double subLineH  = remaining / 2.0;
@@ -849,7 +849,7 @@ namespace AmiVanl2.Service
                         new XRect(x0 + 3, ry, colRefW - 6, refNameH), XStringFormats.CenterLeft);
 
                     // Zone commentaire juste sous le numéro de ref — toujours visible
-                    const double commentZoneH = 14;
+                    const double commentZoneH = 30;
                     double commentZoneY = ry + refNameH;
 
                     // Lignes par operation
