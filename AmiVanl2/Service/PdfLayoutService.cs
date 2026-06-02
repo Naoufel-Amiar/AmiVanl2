@@ -619,11 +619,13 @@ namespace AmiVanl2.Service
                         : XColor.FromArgb(255, 252, 215);
                     gfx.DrawRectangle(new XSolidBrush(triCommentBg), x0, triCommentY, colRefW, triCommentH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(220, 180, 60), 0.5), x0, triCommentY, colRefW, triCommentH);
+                    gfx.DrawString("Commentaire :", FTiny, new XSolidBrush(XColor.FromArgb(180, 120, 20)),
+                        new XRect(x0 + 3, triCommentY + 1, colRefW - 6, 11), XStringFormats.TopLeft);
                     if (hasComment)
-                        gfx.DrawString("» " + ligne.Commentaire, FTiny,
+                        gfx.DrawString(ligne.Commentaire, FTiny,
                             new XSolidBrush(XColor.FromArgb(120, 60, 0)),
-                            new XRect(x0 + 3, triCommentY, colRefW - 6, triCommentH),
-                            XStringFormats.CenterLeft);
+                            new XRect(x0 + 3, triCommentY + 13, colRefW - 6, triCommentH - 14),
+                            XStringFormats.TopLeft);
 
                     // Ligne 3 : AncienCode
                     gfx.DrawString(ligne.AncienCode, FTiny, XBrushes.Black,
@@ -923,11 +925,13 @@ namespace AmiVanl2.Service
                         : XColor.FromArgb(255, 252, 220);
                     gfx.DrawRectangle(new XSolidBrush(commentBg), x0, commentZoneY, colRefW, commentZoneH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(220, 180, 60), 0.5), x0, commentZoneY, colRefW, commentZoneH);
+                    gfx.DrawString("Commentaire :", FTiny, new XSolidBrush(XColor.FromArgb(180, 120, 20)),
+                        new XRect(x0 + 3, commentZoneY + 1, colRefW - 6, 11), XStringFormats.TopLeft);
                     if (hasCommentAM)
-                        gfx.DrawString("» " + commentAssManu, FTiny,
+                        gfx.DrawString(commentAssManu, FTiny,
                             new XSolidBrush(XColor.FromArgb(120, 60, 0)),
-                            new XRect(x0 + 3, commentZoneY, colRefW - 6, commentZoneH),
-                            XStringFormats.CenterLeft);
+                            new XRect(x0 + 3, commentZoneY + 13, colRefW - 6, commentZoneH - 14),
+                            XStringFormats.TopLeft);
 
                     // Bordure exterieure du groupe reference
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(110, 80, 130), 1.0), x0, ry, tableW, refH);
