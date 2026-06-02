@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmiVanl2"
         mc:Ignorable="d"
-        Title="Suivi de Production — Baud Industries"
-        Icon="Resources/appicon.ico"
+        Title="EV Tracking — Baud Industries"
+        Icon="Resources/baudindustries.ico"
         Height="800" Width="1400">
 
     <Window.Resources>
@@ -75,12 +75,21 @@
             Padding="15">
 
             <Grid>
-                <TextBlock Text="EV TRACKING"
-                       Foreground="White"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"/>
+                <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left">
+                    <Image Source="Resources/baudindustries.ico"
+                           Height="46"
+                           Width="46"
+                           Margin="0,0,12,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="EV Tracking"
+                           Foreground="White"
+                           FontSize="22"
+                           FontFamily="Bahnschrift"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <TextBlock Text="Projet réalisé par Naoufel Amiar"
                        Foreground="White"
