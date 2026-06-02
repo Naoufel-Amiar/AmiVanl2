@@ -97,7 +97,7 @@ namespace AmiVanl2.Service
             {
                 PageSeparateur(doc, "JOINTS", ColJoints);
                 PageTableEquipes(doc,
-                    "Joints — Suivi journalier par equipe et par reference",
+                    "Joints — Suivi journalier par équipe et par référence",
                     ColJoints, BuildLignesJoints(joints));
             }
 
@@ -105,7 +105,7 @@ namespace AmiVanl2.Service
             {
                 PageSeparateur(doc, "TRI", ColTri);
                 PageTableEquipes(doc,
-                    "Tri — Suivi journalier par equipe et par reference",
+                    "Tri — Suivi journalier par équipe et par référence",
                     ColTri, BuildLignesTri(tris));
             }
 
@@ -227,7 +227,7 @@ namespace AmiVanl2.Service
                     new XRect(0, 40, W, 75), XStringFormats.Center);
 
                 var fDate = new XFont("Arial", 14, XFontStyleEx.Regular);
-                gfx.DrawString("Genere le " + DateTime.Now.ToString("dd/MM/yyyy a HH:mm"),
+                gfx.DrawString("Généré le " + DateTime.Now.ToString("dd/MM/yyyy 'à' HH:mm"),
                     fDate, XBrushes.White, new XRect(0, 125, W, 38), XStringFormats.Center);
 
                 var fSec = new XFont("Arial", 14, XFontStyleEx.Bold);
@@ -259,14 +259,14 @@ namespace AmiVanl2.Service
                     gfx.DrawString(nom, fCard,
                         new XSolidBrush(active ? XColor.FromArgb(30, 30, 30) : XColor.FromArgb(150, 150, 150)),
                         new XRect(startX, cardY + 8, cardW, 24), XStringFormats.Center);
-                    string statut = active ? nbRefs + " ref(s) en production" : "Aucune donnee";
+                    string statut = active ? nbRefs + " réf. en production" : "Aucune donnée";
                     gfx.DrawString(statut, fCardSub,
                         new XSolidBrush(active ? XColor.FromArgb(30, 120, 30) : XColor.FromArgb(150, 0, 0)),
                         new XRect(startX, cardY + cardH - 28, cardW, 16), XStringFormats.Center);
                     startX += cardW + gap;
                 }
 
-                gfx.DrawString("Document a usage interne — Impression recommandee en A3",
+                gfx.DrawString("Document à usage interne — Impression recommandée en A3",
                     FSmall, XBrushes.Gray, new XRect(0, H - 28, W, 18), XStringFormats.Center);
             }
         }
@@ -322,7 +322,7 @@ namespace AmiVanl2.Service
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Suivi Presse — Production journaliere VS Objectif semaine", ColPresse);
+                DessinerEnTete(gfx, "Suivi Presse — Production journalière vs objectif semaine", ColPresse);
                 DessinerLegendeCouleurs(gfx, H - 18);
 
                 double y0    = HeaderH + Marge;
@@ -380,7 +380,7 @@ namespace AmiVanl2.Service
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Automatique — Production journaliere VS Objectif semaine", ColAssAuto);
+                DessinerEnTete(gfx, "Assemblage Automatique — Production journalière vs objectif semaine", ColAssAuto);
                 DessinerLegendeCouleurs(gfx, H - 18);
 
                 double y0   = HeaderH + Marge;
@@ -567,7 +567,7 @@ namespace AmiVanl2.Service
                     (int)(couleur.R * 0.65), (int)(couleur.G * 0.65), (int)(couleur.B * 0.65));
 
                 DessinerCellule(gfx, x0, y0, colRefW, headerRowH,
-                    "Ref / Ancien code / Objectif", FTiny, new XSolidBrush(hBg), true);
+                    "Réf. / Ancien code / Objectif", FTiny, new XSolidBrush(hBg), true);
 
                 string[] dayHeaders = lignes[0].DayLabels.Concat(new[] { "TOTAL" }).ToArray();
                 for (int d = 0; d < 8; d++)
@@ -766,7 +766,7 @@ namespace AmiVanl2.Service
             using (var gfx = XGraphics.FromPdfPage(page))
             {
                 gfx.DrawRectangle(XBrushes.White, 0, 0, W, H);
-                DessinerEnTete(gfx, "Assemblage Manuel — Suivi journalier par equipe et par operation", ColAssManuel);
+                DessinerEnTete(gfx, "Assemblage Manuel — Suivi journalier par équipe et par opération", ColAssManuel);
 
                 double x0         = Marge;
                 double y0         = HeaderH + 4;
@@ -785,7 +785,7 @@ namespace AmiVanl2.Service
                     (int)(ColAssManuel.R * 0.65), (int)(ColAssManuel.G * 0.65), (int)(ColAssManuel.B * 0.65));
 
                 DessinerCellule(gfx, x0, y0, colRefW, headerRowH,
-                    "Ref / Op / Objectif", FTiny, new XSolidBrush(hBg), true);
+                    "Réf. / Op. / Objectif", FTiny, new XSolidBrush(hBg), true);
 
                 var firstOp = assManuels.First();
                 string[] dayHeaders = new[] {
