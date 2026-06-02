@@ -94,7 +94,6 @@
                 Background="#CEC3C1"
                 CornerRadius="15"
                 Padding="30"
-                MinHeight="900"
                 Margin="0,10,0,0">
 
             <Grid>
@@ -109,10 +108,10 @@
                 <Grid Margin="0,45,0,0">
 
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="165"/>
-                        <RowDefinition Height="95"/>
-                        <RowDefinition Height="165"/>
-                        <RowDefinition Height="115"/>
+                        <RowDefinition Height="1.65*"/>
+                        <RowDefinition Height="0.95*"/>
+                        <RowDefinition Height="1.65*"/>
+                        <RowDefinition Height="1.15*"/>
                     </Grid.RowDefinitions>
 
                     <!-- GROUPE 1 -->
