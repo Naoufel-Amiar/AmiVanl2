@@ -130,14 +130,21 @@
         <!-- Bouton génération -->
         <StackPanel Grid.Row="2" Margin="0,25,0,0" HorizontalAlignment="Center">
 
-            <TextBlock x:Name="TxtChargement"
-                       Text="Lecture du fichier Excel en cours…"
-                       FontFamily="Bahnschrift"
-                       FontSize="13"
-                       Foreground="#1976D2"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,12"
-                       Visibility="Collapsed"/>
+            <StackPanel x:Name="PanelChargement"
+                        Visibility="Collapsed"
+                        Margin="0,0,0,14">
+                <TextBlock Text="Lecture du fichier Excel en cours…"
+                           FontFamily="Bahnschrift"
+                           FontSize="13"
+                           Foreground="#1976D2"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,8"/>
+                <ProgressBar IsIndeterminate="True"
+                             Width="260"
+                             Height="6"
+                             Foreground="#1E88E5"
+                             Background="#DDDDDD"/>
+            </StackPanel>
 
             <Button Content="DÉMARRER LA GÉNÉRATION" Name="BtnGenerate"
                     Style="{StaticResource GenerateButtonStyle}" Click="BtnGenerate_Click"/>

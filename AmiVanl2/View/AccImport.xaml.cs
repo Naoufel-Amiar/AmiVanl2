@@ -126,7 +126,7 @@ namespace AmiVanl2.View
                 }
 
                 BtnGenerate.IsEnabled = false;
-                TxtChargement.Visibility = Visibility.Visible;
+                PanelChargement.Visibility = Visibility.Visible;
 
                 PresseController presseController =
                     new PresseController();
@@ -213,7 +213,7 @@ namespace AmiVanl2.View
             finally
             {
                 BtnGenerate.IsEnabled = true;
-                TxtChargement.Visibility = Visibility.Collapsed;
+                PanelChargement.Visibility = Visibility.Collapsed;
             }
         }
     }
