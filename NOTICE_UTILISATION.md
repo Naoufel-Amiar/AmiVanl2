@@ -275,5 +275,4 @@ Si une page de suivi ne contient aucun graphique, cela signifie que la feuille c
 
 ---
 
-*EV Tracking — Baud Industries*
-*Version 1.0*
+*EV Tracking - Baud Industries - v1.2*
