@@ -111,7 +111,7 @@
                     <DataTemplate>
                         <Border
                             Width="500"
-                            Height="420"
+                            Height="400"
                             Margin="12"
                             BorderBrush="#DDD"
                             BorderThickness="1"

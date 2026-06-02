@@ -157,7 +157,8 @@ namespace AmiVanl2.View
                     InsideLabelPosition = 0.65,
                     OutsideLabelFormat = "{1}: {0}",
                     InsideLabelFormat = "{2:0}%",
-                    FontSize = 11
+                    FontSize = 11,
+                    Diameter = 0.7
                 };
 
             if (equ1 > 0)
@@ -229,7 +230,8 @@ namespace AmiVanl2.View
                     InsideLabelPosition = 0.7,
                     OutsideLabelFormat = "{1}: {0}",
                     InsideLabelFormat = "{2:0}%",
-                    FontSize = 11
+                    FontSize = 11,
+                    Diameter = 0.7
                 };
 
             if (production > 0)
