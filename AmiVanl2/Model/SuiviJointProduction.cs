@@ -66,12 +66,5 @@
             + ProdSamedi
             + ProdDimanche;
 
-        public double EcartObjectif =>
-            TotalProduction - ObjectifSemaine;
-
-        public double TauxAtteinte =>
-            ObjectifSemaine == 0
-                ? 0
-                : TotalProduction / ObjectifSemaine * 100;
     }
 }

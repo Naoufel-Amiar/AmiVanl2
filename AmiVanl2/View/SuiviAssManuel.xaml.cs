@@ -37,19 +37,14 @@ namespace AmiVanl2.View
         private void ChargerBoutons()
         {
             var refsAvecProd = AppData.AssManuels
-                .Select(x => x.Reference)
-                .Distinct()
-                .Where(ref_ =>
-                {
-                    var ops = AppData.AssManuels.Where(x => x.Reference == ref_).ToList();
-                    return ops.Any(p =>
-                        p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
-                        p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
-                        p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
-                        p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
-                        p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0);
-                })
-                .Select(ref_ => new RefViewModel { Reference = ref_ })
+                .GroupBy(x => x.Reference)
+                .Where(g => g.Any(p =>
+                    p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
+                    p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
+                    p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
+                    p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
+                    p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0))
+                .Select(g => new RefViewModel { Reference = g.Key })
                 .ToList();
 
             ListeBoutons.ItemsSource = refsAvecProd;

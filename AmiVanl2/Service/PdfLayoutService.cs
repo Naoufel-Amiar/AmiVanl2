@@ -63,7 +63,7 @@ namespace AmiVanl2.Service
         // POINT D'ENTREE
         // ===================================================================
 
-        public void GenererRapport(string cheminPdf)
+        public void GenererRapport(string cheminPdf, bool avecSeparatrices = true)
         {
             PdfDocument doc = new PdfDocument();
             doc.Info.Title = "Rapport de Suivi de Production";
@@ -83,19 +83,19 @@ namespace AmiVanl2.Service
 
             if (presses.Count > 0)
             {
-                PageSeparateur(doc, "SUIVI PRESSE", ColPresse);
+                if (avecSeparatrices) PageSeparateur(doc, "SUIVI PRESSE", ColPresse);
                 PagePresseComplet(doc, presses);
             }
 
             if (assAutos.Count > 0)
             {
-                PageSeparateur(doc, "ASSEMBLAGE AUTOMATIQUE", ColAssAuto);
+                if (avecSeparatrices) PageSeparateur(doc, "ASSEMBLAGE AUTOMATIQUE", ColAssAuto);
                 PageAssAutoComplet(doc, assAutos);
             }
 
             if (joints.Count > 0)
             {
-                PageSeparateur(doc, "JOINTS", ColJoints);
+                if (avecSeparatrices) PageSeparateur(doc, "JOINTS", ColJoints);
                 PageTableEquipes(doc,
                     "Joints — Suivi journalier par équipe et par référence",
                     ColJoints, BuildLignesJoints(joints));
@@ -103,7 +103,7 @@ namespace AmiVanl2.Service
 
             if (tris.Count > 0)
             {
-                PageSeparateur(doc, "TRI", ColTri);
+                if (avecSeparatrices) PageSeparateur(doc, "TRI", ColTri);
                 PageTableEquipes(doc,
                     "Tri — Suivi journalier par équipe et par référence",
                     ColTri, BuildLignesTri(tris));
@@ -111,7 +111,7 @@ namespace AmiVanl2.Service
 
             if (assManuels.Count > 0)
             {
-                PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
+                if (avecSeparatrices) PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
                 PageAssManuelTable(doc, assManuels);
             }
 

@@ -95,10 +95,21 @@ namespace AmiVanl2.View
 
         private void BtnPdfGenerate_Click(object sender, RoutedEventArgs e)
         {
+            LancerGeneration(avecSeparatrices: true);
+        }
+
+        private void BtnPdfImprimer_Click(object sender, RoutedEventArgs e)
+        {
+            LancerGeneration(avecSeparatrices: false);
+        }
+
+        private void LancerGeneration(bool avecSeparatrices)
+        {
+            string suffixe = avecSeparatrices ? "Rapport_Complet" : "Rapport_Impression";
             SaveFileDialog dialog = new SaveFileDialog
             {
                 Filter   = "Fichier PDF (*.pdf)|*.pdf",
-                FileName = "Rapport_Suivi_Production_" + DateTime.Now.ToString("yyyy-MM-dd") + ".pdf"
+                FileName = suffixe + "_" + DateTime.Now.ToString("yyyy-MM-dd") + ".pdf"
             };
 
             if (dialog.ShowDialog() != true)
@@ -107,13 +118,11 @@ namespace AmiVanl2.View
             string cheminPdf = dialog.FileName;
 
             BtnPdfGenerate.IsEnabled = false;
+            BtnPdfImprimer.IsEnabled = false;
             TxtStatut.Text = "Génération en cours… Veuillez patienter.";
 
-            // Force l'affichage du message avant de bloquer le thread UI
             Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
 
-            // PngExporter d'OxyPlot.Wpf requiert le thread STA (thread UI).
-            // On lance un thread STA dédié et on dispatche le résultat sur l'UI.
             var dispatcher = Dispatcher;
             var thread = new Thread(() =>
             {
@@ -121,7 +130,7 @@ namespace AmiVanl2.View
                 try
                 {
                     var service = new PdfLayoutService();
-                    service.GenererRapport(cheminPdf);
+                    service.GenererRapport(cheminPdf, avecSeparatrices);
                 }
                 catch (Exception ex)
                 {
@@ -131,6 +140,7 @@ namespace AmiVanl2.View
                 dispatcher.Invoke(() =>
                 {
                     BtnPdfGenerate.IsEnabled = true;
+                    BtnPdfImprimer.IsEnabled = true;
                     TxtStatut.Text = "";
 
                     if (erreur == null)
