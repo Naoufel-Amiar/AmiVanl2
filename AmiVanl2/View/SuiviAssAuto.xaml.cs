@@ -33,6 +33,18 @@ namespace AmiVanl2.View
 
             ChargerGraphiqueGroupe(groupe1, PlotAssAutoGroupe1, LegendAssAutoGroupe1, "Assemblage automatique — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotAssAutoGroupe2, LegendAssAutoGroupe2, "Assemblage automatique — Groupe 2");
+
+            var commentaires = AppData.AssAutos
+                .Where(p => !string.IsNullOrWhiteSpace(p.Commentaire))
+                .GroupBy(p => p.Reference)
+                .Select(g => g.Key + " : " + g.First().Commentaire)
+                .ToList();
+
+            if (commentaires.Count > 0)
+            {
+                ListeCommentaires.ItemsSource = commentaires;
+                PanelCommentaires.Visibility = Visibility.Visible;
+            }
         }
 
         private void ChargerGraphiqueGroupe(List<AssAutoProduction> groupe, OxyPlot.Wpf.PlotView plot, Grid legend, string titre)

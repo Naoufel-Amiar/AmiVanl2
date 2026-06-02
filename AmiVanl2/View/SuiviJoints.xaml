@@ -45,6 +45,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -62,11 +63,36 @@
             FontSize="18"
             FontFamily="Bahnschrift"
             FontWeight="SemiBold"
-            Margin="0,15,0,15"
+            Margin="0,15,0,5"
             HorizontalAlignment="Center"/>
 
-        <ScrollViewer
+        <Border
+            x:Name="PanelCommentaire"
             Grid.Row="2"
+            Background="#FFF8E1"
+            BorderBrush="#F59E0B"
+            BorderThickness="1"
+            CornerRadius="6"
+            Margin="20,0,20,10"
+            Padding="12,8"
+            Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    Text="💬 "
+                    FontSize="14"
+                    VerticalAlignment="Top"
+                    Margin="0,1,4,0"/>
+                <TextBlock
+                    x:Name="TxtCommentaire"
+                    FontSize="13"
+                    FontFamily="Bahnschrift"
+                    Foreground="#92400E"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer
+            Grid.Row="3"
             HorizontalScrollBarVisibility="Auto"
             VerticalScrollBarVisibility="Disabled"
             Margin="0,0,0,15">
@@ -94,7 +120,7 @@
         </ScrollViewer>
 
         <ScrollViewer
-            Grid.Row="3"
+            Grid.Row="4"
             VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Disabled">
 

@@ -98,6 +98,20 @@ namespace AmiVanl2.View
 
             TitreReference.Text = "Référence : " + reference;
 
+            AssManuelProduction anyWithComment = AppData.AssManuels
+                .FirstOrDefault(x => x.Reference == reference
+                    && !string.IsNullOrWhiteSpace(x.Commentaire));
+
+            if (anyWithComment != null)
+            {
+                TxtCommentaire.Text = anyWithComment.Commentaire;
+                PanelCommentaire.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelCommentaire.Visibility = Visibility.Collapsed;
+            }
+
             TxtInfoCapuchon.Text = "Capuchon : " + totalCapuchon.ToString("0")
                 + " / " + objectifSemaine.ToString("0") + " pcs";
 

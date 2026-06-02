@@ -33,6 +33,18 @@ namespace AmiVanl2.View
 
             ChargerGraphiqueGroupe(groupe1, PlotPresseGroupe1, LegendPresseGroupe1, "Production presse — Groupe 1");
             ChargerGraphiqueGroupe(groupe2, PlotPresseGroupe2, LegendPresseGroupe2, "Production presse — Groupe 2");
+
+            var commentaires = AppData.Presses
+                .Where(p => !string.IsNullOrWhiteSpace(p.Commentaire))
+                .GroupBy(p => p.Reference)
+                .Select(g => g.Key + " : " + g.First().Commentaire)
+                .ToList();
+
+            if (commentaires.Count > 0)
+            {
+                ListeCommentaires.ItemsSource = commentaires;
+                PanelCommentaires.Visibility = Visibility.Visible;
+            }
         }
 
         private void ChargerGraphiqueGroupe(List<PresseProduction> groupe,OxyPlot.Wpf.PlotView plot, Grid legend, string titre)

@@ -78,6 +78,16 @@ namespace AmiVanl2.View
                 + " | Ancien code : "
                 + tri.AncienCode;
 
+            if (!string.IsNullOrWhiteSpace(tri.Commentaire))
+            {
+                TxtCommentaire.Text = tri.Commentaire;
+                PanelCommentaire.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelCommentaire.Visibility = Visibility.Collapsed;
+            }
+
             List<PlotModel> camemberts =
                 new List<PlotModel>();
 
