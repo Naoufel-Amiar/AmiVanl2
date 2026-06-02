@@ -56,6 +56,7 @@ namespace AmiVanl2.Service
             public double ObjSemaine;
             public string[] DayLabels;    // 7 elements : Lun..Dim
             public double[][] DayEquipes; // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
+            public string Commentaire;
         }
 
         // ===================================================================
@@ -84,26 +85,12 @@ namespace AmiVanl2.Service
             {
                 PageSeparateur(doc, "SUIVI PRESSE", ColPresse);
                 PagePresseComplet(doc, presses);
-                var commentsPresse = presses
-                    .GroupBy(p => p.Reference)
-                    .Where(g => g.Any(p => !string.IsNullOrWhiteSpace(p.Commentaire)))
-                    .Select(g => (g.Key, g.First(p => !string.IsNullOrWhiteSpace(p.Commentaire)).Commentaire))
-                    .ToList();
-                if (commentsPresse.Count > 0)
-                    PageCommentaires(doc, "Presse — Commentaires de la semaine", ColPresse, commentsPresse);
             }
 
             if (assAutos.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE AUTOMATIQUE", ColAssAuto);
                 PageAssAutoComplet(doc, assAutos);
-                var commentsAssAuto = assAutos
-                    .GroupBy(a => a.Reference)
-                    .Where(g => g.Any(a => !string.IsNullOrWhiteSpace(a.Commentaire)))
-                    .Select(g => (g.Key, g.First(a => !string.IsNullOrWhiteSpace(a.Commentaire)).Commentaire))
-                    .ToList();
-                if (commentsAssAuto.Count > 0)
-                    PageCommentaires(doc, "Assemblage Automatique — Commentaires de la semaine", ColAssAuto, commentsAssAuto);
             }
 
             if (joints.Count > 0)
@@ -112,12 +99,6 @@ namespace AmiVanl2.Service
                 PageTableEquipes(doc,
                     "Joints — Suivi journalier par equipe et par reference",
                     ColJoints, BuildLignesJoints(joints));
-                var commentsJoints = joints
-                    .Where(j => !string.IsNullOrWhiteSpace(j.Commentaire))
-                    .Select(j => (j.Reference, j.Commentaire))
-                    .ToList();
-                if (commentsJoints.Count > 0)
-                    PageCommentaires(doc, "Joints — Commentaires de la semaine", ColJoints, commentsJoints);
             }
 
             if (tris.Count > 0)
@@ -126,25 +107,12 @@ namespace AmiVanl2.Service
                 PageTableEquipes(doc,
                     "Tri — Suivi journalier par equipe et par reference",
                     ColTri, BuildLignesTri(tris));
-                var commentsTri = tris
-                    .Where(t => !string.IsNullOrWhiteSpace(t.Commentaire))
-                    .Select(t => (t.Reference, t.Commentaire))
-                    .ToList();
-                if (commentsTri.Count > 0)
-                    PageCommentaires(doc, "Tri — Commentaires de la semaine", ColTri, commentsTri);
             }
 
             if (assManuels.Count > 0)
             {
                 PageSeparateur(doc, "ASSEMBLAGE MANUEL", ColAssManuel);
                 PageAssManuelTable(doc, assManuels);
-                var commentsAssManu = assManuels
-                    .GroupBy(m => m.Reference)
-                    .Where(g => g.Any(m => !string.IsNullOrWhiteSpace(m.Commentaire)))
-                    .Select(g => (g.Key, g.First(m => !string.IsNullOrWhiteSpace(m.Commentaire)).Commentaire))
-                    .ToList();
-                if (commentsAssManu.Count > 0)
-                    PageCommentaires(doc, "Assemblage Manuel — Commentaires de la semaine", ColAssManuel, commentsAssManu);
             }
 
             doc.Save(cheminPdf);
@@ -345,8 +313,9 @@ namespace AmiVanl2.Service
                     g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
                     g.Sum(x => x.ProdDimanche)
                 },
-                ObjSemaine = g.Sum(x => x.ObjectifSemaine),
-                TotalProd  = g.Sum(x => x.TotalProduction)
+                ObjSemaine  = g.Sum(x => x.ObjectifSemaine),
+                TotalProd   = g.Sum(x => x.TotalProduction),
+                Commentaire = g.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Commentaire))?.Commentaire ?? ""
             }).ToList();
 
             var page = NouvellePageA3(doc);
@@ -356,10 +325,12 @@ namespace AmiVanl2.Service
                 DessinerEnTete(gfx, "Suivi Presse — Production journaliere VS Objectif semaine", ColPresse);
                 DessinerLegendeCouleurs(gfx, H - 18);
 
-                double y0   = HeaderH + Marge;
-                double rowH = (H - y0 - Marge - 22) / refs.Count;
-                double barW = (W - 2 * Marge) * 0.72;
-                double camW = (W - 2 * Marge) * 0.28;
+                double y0    = HeaderH + Marge;
+                double rowH  = (H - y0 - Marge - 22) / refs.Count;
+                double totW  = W - 2 * Marge;
+                double barW  = totW * 0.60;
+                double camW  = totW * 0.22;
+                double comW  = totW * 0.18;
 
                 for (int i = 0; i < refs.Count; i++)
                 {
@@ -371,6 +342,8 @@ namespace AmiVanl2.Service
 
                     var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
                     PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
+
+                    DessinerCelluleCommentaire(gfx, Marge + barW + camW, ry, comW - 2, rowH - 8, r.Commentaire);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
@@ -398,8 +371,9 @@ namespace AmiVanl2.Service
                     g.Sum(x => x.ProdJeudi),    g.Sum(x => x.ProdVendredi), g.Sum(x => x.ProdSamedi),
                     g.Sum(x => x.ProdDimanche)
                 },
-                ObjSemaine = g.Sum(x => x.ObjectifSemaine),
-                TotalProd  = g.Sum(x => x.TotalProduction)
+                ObjSemaine  = g.Sum(x => x.ObjectifSemaine),
+                TotalProd   = g.Sum(x => x.TotalProduction),
+                Commentaire = g.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Commentaire))?.Commentaire ?? ""
             }).ToList();
 
             var page = NouvellePageA3(doc);
@@ -411,8 +385,10 @@ namespace AmiVanl2.Service
 
                 double y0   = HeaderH + Marge;
                 double rowH = (H - y0 - Marge - 22) / refs.Count;
-                double barW = (W - 2 * Marge) * 0.72;
-                double camW = (W - 2 * Marge) * 0.28;
+                double totW = W - 2 * Marge;
+                double barW = totW * 0.60;
+                double camW = totW * 0.22;
+                double comW = totW * 0.18;
 
                 for (int i = 0; i < refs.Count; i++)
                 {
@@ -424,6 +400,8 @@ namespace AmiVanl2.Service
 
                     var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
                     PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
+
+                    DessinerCelluleCommentaire(gfx, Marge + barW + camW, ry, comW - 2, rowH - 8, r.Commentaire);
                 }
                 DessinerNumeroPage(gfx, doc.Pages.Count);
             }
@@ -503,9 +481,10 @@ namespace AmiVanl2.Service
         {
             return joints.Select(jt => new LigneTable
             {
-                Reference  = jt.Reference,
-                AncienCode = jt.AncienCode,
-                ObjSemaine = jt.ObjectifSemaine,
+                Reference   = jt.Reference,
+                AncienCode  = jt.AncienCode,
+                ObjSemaine  = jt.ObjectifSemaine,
+                Commentaire = jt.Commentaire,
                 DayLabels  = new[] {
                     jt.LabelLundi, jt.LabelMardi, jt.LabelMercredi,
                     jt.LabelJeudi, jt.LabelVendredi, jt.LabelSamedi, jt.LabelDimanche
@@ -531,9 +510,10 @@ namespace AmiVanl2.Service
         {
             return tris.Select(tr => new LigneTable
             {
-                Reference  = tr.Reference,
-                AncienCode = tr.AncienCode,
-                ObjSemaine = tr.ObjectifSemaine,
+                Reference   = tr.Reference,
+                AncienCode  = tr.AncienCode,
+                ObjSemaine  = tr.ObjectifSemaine,
+                Commentaire = tr.Commentaire,
                 DayLabels  = new[] {
                     tr.LabelLundi, tr.LabelMardi, tr.LabelMercredi,
                     tr.LabelJeudi, tr.LabelVendredi, tr.LabelSamedi, tr.LabelDimanche
@@ -620,16 +600,34 @@ namespace AmiVanl2.Service
                     gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, dataRowH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
 
-                    double refLineH = dataRowH / 3.0;
-                    string[] refLines = {
-                        ligne.Reference,
-                        ligne.AncienCode,
-                        "Obj: " + ligne.ObjSemaine.ToString("0")
-                    };
-                    for (int rl = 0; rl < 3; rl++)
-                        gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
-                            new XRect(x0 + 3, ry + rl * refLineH, colRefW - 6, refLineH),
-                            XStringFormats.CenterLeft);
+                    bool hasComment = !string.IsNullOrWhiteSpace(ligne.Commentaire);
+                    int nbRefLines  = hasComment ? 4 : 3;
+                    double refLineH = dataRowH / nbRefLines;
+
+                    string[] refLines = hasComment
+                        ? new[] { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0"), ligne.Commentaire }
+                        : new[] { ligne.Reference, ligne.AncienCode, "Obj: " + ligne.ObjSemaine.ToString("0") };
+
+                    for (int rl = 0; rl < nbRefLines; rl++)
+                    {
+                        double lineY = ry + rl * refLineH;
+                        if (hasComment && rl == nbRefLines - 1)
+                        {
+                            // Bandeau ambré pour le commentaire
+                            gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 185)),
+                                x0, lineY, colRefW, refLineH);
+                            gfx.DrawString("» " + refLines[rl], FTiny,
+                                new XSolidBrush(XColor.FromArgb(146, 64, 14)),
+                                new XRect(x0 + 3, lineY, colRefW - 6, refLineH),
+                                XStringFormats.CenterLeft);
+                        }
+                        else
+                        {
+                            gfx.DrawString(refLines[rl], rl == 0 ? FBold : FTiny, XBrushes.Black,
+                                new XRect(x0 + 3, lineY, colRefW - 6, refLineH),
+                                XStringFormats.CenterLeft);
+                        }
+                    }
 
                     // Cellules journalieres
                     for (int d = 0; d < 8; d++)
@@ -834,8 +832,25 @@ namespace AmiVanl2.Service
 
                     // Ref + AncienCode en haut
                     var op0 = ops[0];
+                    string commentAssManu = op0.Commentaire ?? "";
+                    bool hasCommentAM = !string.IsNullOrWhiteSpace(commentAssManu);
+
+                    // Ref sur la moitié haute de la 1ère ligne opération
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
                         new XRect(x0 + 3, ry + 2, colRefW - 6, dataRowH * 0.45), XStringFormats.CenterLeft);
+
+                    // Commentaire : bandeau ambré en bas de la cellule ref fusionnée
+                    if (hasCommentAM)
+                    {
+                        double commentH = Math.Min(refH * 0.18, 16);
+                        double commentY = ry + refH - commentH;
+                        gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 185)),
+                            x0, commentY, colRefW, commentH);
+                        gfx.DrawString("» " + commentAssManu, FTiny,
+                            new XSolidBrush(XColor.FromArgb(146, 64, 14)),
+                            new XRect(x0 + 3, commentY, colRefW - 6, commentH),
+                            XStringFormats.CenterLeft);
+                    }
 
                     // Lignes par operation
                     for (int opIdx = 0; opIdx < opCount; opIdx++)
@@ -949,6 +964,34 @@ namespace AmiVanl2.Service
         // ===================================================================
         // LEGENDE + GETTERS PRODUCTION
         // ===================================================================
+
+        private void DessinerCelluleCommentaire(XGraphics gfx,
+            double x, double y, double w, double h, string commentaire)
+        {
+            bool hasComment = !string.IsNullOrWhiteSpace(commentaire);
+            XColor bg  = hasComment
+                ? XColor.FromArgb(255, 248, 220)   // jaune pâle ambré
+                : XColor.FromArgb(245, 245, 245);  // gris très clair si vide
+            XColor brd = hasComment
+                ? XColor.FromArgb(245, 158, 11)    // bordure ambre
+                : XColor.FromArgb(210, 210, 210);
+
+            gfx.DrawRectangle(new XSolidBrush(bg), x, y, w, h);
+            gfx.DrawRectangle(new XPen(brd, 0.8), x, y, w, h);
+
+            if (!hasComment) return;
+
+            // En-tête "Commentaire" en petit gris
+            double labelH = h * 0.28;
+            gfx.DrawString("Commentaire", FTiny, new XSolidBrush(XColor.FromArgb(180, 120, 20)),
+                new XRect(x + 4, y + 3, w - 8, labelH), XStringFormats.TopLeft);
+
+            // Texte commentaire en brun ambré, retour à la ligne automatique via troncature
+            gfx.DrawString(commentaire, FSmall,
+                new XSolidBrush(XColor.FromArgb(120, 50, 0)),
+                new XRect(x + 4, y + labelH + 4, w - 8, h - labelH - 8),
+                XStringFormats.TopLeft);
+        }
 
         private void DessinerLegendeCouleurs(XGraphics gfx, double y)
         {
