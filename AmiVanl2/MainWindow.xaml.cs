@@ -39,7 +39,7 @@ namespace AmiVanl2
             BtnAccueilImport.IsEnabled = true;
         }
 
-        private void MarquerBoutonActif(Button bouton)
+        public void MarquerBoutonActif(Button bouton)
         {
             if (_boutonActif != null)
                 _boutonActif.Background = CouleurNormale;

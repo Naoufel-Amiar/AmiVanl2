@@ -104,11 +104,11 @@
                     <TextBlock TextWrapping="Wrap" FontFamily="Bahnschrift" FontSize="13"
                                Foreground="#555555" Margin="0,5,0,0" LineHeight="20">
                         Les 5 boutons du menu deviennent actifs après import :&#x0a;
-                        ·  Suivi PRESSE  — barres journalières par référence et machine&#x0a;
-                        ·  Suivi TRI  — camemberts par équipe pour chaque référence&#x0a;
-                        ·  Suivi ASS AUTO  — barres journalières assemblage automatique&#x0a;
-                        ·  Suivi ASS MANUEL  — barres Capuchon / Insert par référence&#x0a;
-                        ·  Suivi JOINTS  — camemberts par équipe pour chaque référence&#x0a;&#x0a;
+                        ·  Suivi Presse  — barres journalières par référence et machine&#x0a;
+                        ·  Suivi Tri  — camemberts par équipe pour chaque référence&#x0a;
+                        ·  Assemblage Auto  — barres journalières par référence et machine&#x0a;
+                        ·  Assemblage Manuel  — tableau par équipe et par opération&#x0a;
+                        ·  Suivi Joints  — camemberts par équipe pour chaque référence&#x0a;&#x0a;
                         Les barres sont  vertes  si l'objectif est atteint,  rouges  sinon.
                         Clique sur une référence pour afficher son détail.
                     </TextBlock>

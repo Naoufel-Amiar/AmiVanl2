@@ -186,11 +186,11 @@ namespace AmiVanl2.View
 
         private void BtnGoToPage2Presse_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            Window fenetre =
-      Window.GetWindow(this);
+            Window fenetre = Window.GetWindow(this);
 
             if (fenetre is MainWindow mainWindow)
             {
+                mainWindow.MarquerBoutonActif(mainWindow.BtnSuiviPresse);
                 mainWindow.MainContent.Children.Clear();
 
                 mainWindow.MainContent.Children.Add(

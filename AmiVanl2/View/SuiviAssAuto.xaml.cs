@@ -192,6 +192,7 @@ namespace AmiVanl2.View
 
             if (fenetre is MainWindow mainWindow)
             {
+                mainWindow.MarquerBoutonActif(mainWindow.BtnSuiviAssAuto);
                 mainWindow.MainContent.Children.Clear();
                 mainWindow.MainContent.Children.Add(new SuiviAssAuto2());
             }

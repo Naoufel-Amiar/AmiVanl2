@@ -81,7 +81,7 @@ namespace AmiVanl2.View
                     Titre         = "Assemblage Manuel",
                     Fond          = new SolidColorBrush(Color.FromArgb(80, 230, 210, 235)),
                     NbElements    = AppData.AssManuels?.Count > 0
-                        ? AppData.AssManuels.Count + " ligne(s) — courbes Capuchon / Insert / Objectif"
+                        ? AppData.AssManuels.Count + " ligne(s) — tableau par équipe et par opération"
                         : "",
                     Statut        = AppData.AssManuels?.Count > 0 ? "✓ Inclus" : "⚠ Aucune donnée",
                     CouleurStatut = AppData.AssManuels?.Count > 0
