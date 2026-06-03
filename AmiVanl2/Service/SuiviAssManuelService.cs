@@ -69,6 +69,7 @@ namespace AmiVanl2.Service
                         if (EstReferenceValide(referenceTexte))
                         {
                             referenceCourante = referenceTexte;
+                            lignesVidesConsecutives = 0; // nouvelle ref = on repart
                         }
 
                         if (!string.IsNullOrWhiteSpace(equipeTexte))
@@ -80,7 +81,7 @@ namespace AmiVanl2.Service
                         {
                             lignesVidesConsecutives++;
 
-                            if (lignesVidesConsecutives >= 6)
+                            if (lignesVidesConsecutives >= 15)
                             {
                                 break;
                             }
