@@ -998,7 +998,8 @@ namespace AmiVanl2.Service
                                 dayEquipes[d], null, maxVal,
                                 isTotal: d == 7,
                                 isWeekend: d == 5 || d == 6,
-                                objSemaine: opObj);
+                                objSemaine: opObj,
+                                objEquipe: op.ObjectifEquipe);
                         }
                     }
 
