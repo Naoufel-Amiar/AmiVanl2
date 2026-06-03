@@ -342,8 +342,8 @@ namespace AmiVanl2.Service
                     var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine);
                     PlacerGraphique(gfx, barModel, Marge, ry, barW - 6, rowH - 8);
 
-                    var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
-                    PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
+                    DessinerCamembertAvecTexte(gfx, r.CamTitre, r.TotalProd, r.ObjSemaine,
+                        Marge + barW, ry, camW - 4, rowH - 8);
 
                     DessinerCelluleCommentaire(gfx, Marge + barW + camW, ry, comW - 2, rowH - 8, r.Commentaire);
                 }
@@ -400,8 +400,8 @@ namespace AmiVanl2.Service
                     var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine);
                     PlacerGraphique(gfx, barModel, Marge, ry, barW - 6, rowH - 8);
 
-                    var camModel = BuildCamembert(r.CamTitre, r.TotalProd, r.ObjSemaine);
-                    PlacerGraphique(gfx, camModel, Marge + barW, ry, camW - 4, rowH - 8);
+                    DessinerCamembertAvecTexte(gfx, r.CamTitre, r.TotalProd, r.ObjSemaine,
+                        Marge + barW, ry, camW - 4, rowH - 8);
 
                     DessinerCelluleCommentaire(gfx, Marge + barW + camW, ry, comW - 2, rowH - 8, r.Commentaire);
                 }
@@ -1008,6 +1008,44 @@ namespace AmiVanl2.Service
         // ===================================================================
         // CAMEMBERT GENERIQUE (Presse / AssAuto)
         // ===================================================================
+
+        private void DessinerCamembertAvecTexte(XGraphics gfx, string titre,
+            double prod, double obj, double x, double y, double w, double h)
+        {
+            if (obj > 0)
+            {
+                double pct     = Math.Min(100, prod / obj * 100);
+                bool   atteint = prod >= obj;
+                double textH   = 38;
+
+                // Titre référence
+                if (!string.IsNullOrWhiteSpace(titre))
+                    gfx.DrawString(titre, FTiny, XBrushes.Black,
+                        new XRect(x, y, w, 14), XStringFormats.TopCenter);
+
+                // Prod / obj
+                gfx.DrawString(prod.ToString("0") + " / " + obj.ToString("0"),
+                    FTiny, XBrushes.Black,
+                    new XRect(x, y + 14, w, 13), XStringFormats.TopCenter);
+
+                // % coloré
+                XBrush pctBrush = atteint
+                    ? new XSolidBrush(XColor.FromArgb(30, 140, 60))
+                    : new XSolidBrush(XColor.FromArgb(200, 40, 40));
+                gfx.DrawString(pct.ToString("0") + " %",
+                    FBold, pctBrush,
+                    new XRect(x, y + 26, w, 14), XStringFormats.TopCenter);
+
+                // Camembert sans labels dans l'espace restant
+                var camModel = BuildCamembertSansLabels(prod, obj);
+                PlacerGraphique(gfx, camModel, x, y + textH, w, h - textH);
+            }
+            else if (prod > 0)
+            {
+                gfx.DrawString(prod.ToString("0"), FSmall, XBrushes.Black,
+                    new XRect(x, y, w, h), XStringFormats.Center);
+            }
+        }
 
         private PlotModel BuildCamembert(string titre, double prod, double obj)
         {
