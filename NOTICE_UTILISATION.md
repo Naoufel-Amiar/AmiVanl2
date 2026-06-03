@@ -263,7 +263,9 @@ Les deux versions contiennent les mêmes données et graphiques — seule la mis
 
 ### Générer le PDF
 
-1. Cliquer sur **Réunion HPC** ou **Mail / Transfert service**
+1. Choisir le format selon l'usage :
+   - **Réunion HPC** — génère un rapport sans pages de séparation, pensé pour être imprimé et présenté sur feuille lors des réunions HPC. Le document est compact et enchaîne directement les sections.
+   - **Mail / Transfert service** — génère un rapport avec des pages de séparation titrées entre chaque section, adapté pour être envoyé par mail ou transmis à un autre service de l'usine. La mise en page longue facilite la lecture à l'écran et l'identification rapide de chaque atelier.
 2. Choisir l'emplacement de sauvegarde dans la fenêtre qui s'ouvre
 3. Patienter pendant la génération (barre de chargement visible)
 4. Le fichier PDF est créé à l'emplacement choisi
