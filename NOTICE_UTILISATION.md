@@ -27,7 +27,8 @@
 |---|---|
 | Presse | Barres journalières par référence et par machine |
 | Assemblage Automatique | Barres journalières par référence et par machine |
-| Assemblage Manuel | Barres journalières par opération (Capuchon / Insert) |
+| Assemblage Manuel — EV | Barres journalières par opération (Capuchon / Insert) |
+| Assemblage Manuel — Tige de poussée | Barres journalières par opération (Boitier / Sertissage / Soufflet) |
 | Tri | Camemberts journaliers par équipe |
 | Joints | Camemberts journaliers par équipe |
 
@@ -64,11 +65,12 @@ Une barre de chargement s'affiche pendant la lecture du fichier Excel. Le traite
 À la fin, un récapitulatif s'affiche avec le nombre de références et de lignes lues pour chaque atelier :
 
 ```
-PRESSE        : X réf. en production  (X lignes lues)
-ASS. AUTO  : X réf. en production  (X lignes lues)
-JOINTS         : X réf. en production  (X lignes lues)
-TRI                : X réf. en production  (X lignes lues)
-ASS. MANU : X réf. en production  (X lignes lues)
+PRESSE            : X réf. en production  (X lignes lues)
+ASS. AUTO      : X réf. en production  (X lignes lues)
+JOINTS             : X réf. en production  (X lignes lues)
+TRI                    : X réf. en production  (X lignes lues)
+ASS. MANU EV : X réf. en production  (X lignes lues)
+ASS. TIGE         : X réf. en production  (X lignes lues)
 ```
 
 Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
@@ -135,31 +137,34 @@ La page Assemblage Automatique fonctionne de manière identique à la page **Sui
 
 ## 5. Assemblage Manuel
 
-### Accéder à la page
+L'assemblage manuel est divisé en deux familles, accessibles via deux boutons distincts dans le menu :
 
-Cliquer sur **Assemblage Manuel** dans le menu à gauche.
+### 5a. Assemblage Manuel — EV
 
-### Structure de la page
+Cliquer sur **Ass. Manuel — EV** dans le menu à gauche.
 
-La colonne de gauche liste toutes les références disponibles. Cliquer sur une référence pour afficher son détail.
+Contient les références numériques (ex. 004xxx, 008xxx). Les opérations suivies sont typiquement **Capuchon** et **Insert**.
 
-### Données affichées pour chaque référence
+### 5b. Assemblage Manuel — Tige de poussée
 
-Chaque référence en Assemblage Manuel comporte deux opérations suivies séparément :
+Cliquer sur **Ass. Manuel — Tige** dans le menu à gauche.
 
-- **Capuchon** : graphique en barres de la production journalière (somme des 3 équipes)
-- **Insert** : graphique en barres de la production journalière (somme des 3 équipes)
+Contient les références alphanumériques (ex. 90028R, 40030R). Les opérations suivies sont typiquement **Boitier**, **Sertissage** et **Soufflet**.
 
-**En haut de chaque graphique :**
-- Production totale de la semaine vs. objectif hebdomadaire (`X / Y pcs`)
-- Objectif journalier et objectif hebdomadaire
+### Structure commune des deux pages
+
+La barre de boutons en haut liste toutes les références disponibles. Cliquer sur une référence pour afficher son détail.
+
+Pour chaque référence, un **graphique en barres par opération** est affiché (autant de graphiques que d'opérations pour la référence).
 
 **Code couleur des barres :**
 - **Vert** : production du jour ≥ objectif journalier
 - **Rouge** : production du jour < objectif journalier
 - **Bleu** : week-end
 
-Un **commentaire** s'affiche en bas de page si une remarque est associée à la référence.
+L'**objectif journalier** affiché correspond à l'objectif équipe multiplié par le nombre d'équipes actives sur la semaine.
+
+Un **commentaire** s'affiche si une remarque est associée à la référence dans le fichier Excel.
 
 ---
 
@@ -220,21 +225,21 @@ Cliquer sur **Export PDF** dans le menu à gauche.
 ### Vérification des données
 
 Avant de générer, la page affiche la liste des sections incluses dans le rapport avec leur statut :
-- **Prêt** (fond vert) — des données sont disponibles pour cette section
-- **Aucune donnée** (fond gris) — la section sera vide ou absente du rapport
+- **✓ Inclus** (vert) — des données sont disponibles pour cette section
+- **⚠ Aucune donnée** (orange) — la section sera absente du rapport
 
-### Deux modes de génération
+### Deux formats de génération
 
-| Bouton | Description | Usage recommandé |
+| Bouton | Format | Usage |
 |---|---|---|
-| **Version impression** | PDF sans pages de séparation entre les sections | Impression et distribution |
-| **Rapport complet** | PDF avec pages de séparation titrées entre chaque section | Présentation en réunion |
+| **Réunion HPC** | PDF sans pages de séparation entre les sections | Impression pour les réunions HPC — format compact |
+| **Mail / Transfert service** | PDF avec pages de séparation titrées entre chaque section | Envoi par mail ou transfert aux autres services — format long |
 
 Les deux versions contiennent les mêmes données et graphiques — seule la mise en page diffère.
 
 ### Générer le PDF
 
-1. Cliquer sur **Version impression** ou **Rapport complet**
+1. Cliquer sur **Réunion HPC** ou **Mail / Transfert service**
 2. Choisir l'emplacement de sauvegarde dans la fenêtre qui s'ouvre
 3. Patienter pendant la génération (barre de chargement visible)
 4. Le fichier PDF est créé à l'emplacement choisi
@@ -245,9 +250,12 @@ Le rapport est généré au **format A3 paysage**. Il contient une page par atel
 
 - **Presse** : graphiques en barres journalières + camembert de taux d'atteinte par référence
 - **Assemblage Automatique** : idem Presse
-- **Assemblage Manuel** : graphiques Capuchon et Insert par référence
+- **Assemblage Manuel — EV** : tableau par opération (Capuchon / Insert) avec barres et objectifs par équipe
+- **Assemblage Manuel — Tige** : tableau par opération (Boitier / Sertissage / Soufflet) avec barres et objectifs par équipe
 - **Tri** : camemberts par équipe et par jour pour chaque référence
 - **Joints** : idem Tri
+
+Dans les tableaux Assemblage Manuel et Tri, la **valeur de production** est affichée dans chaque case, ainsi que **l'objectif journalier** en gris dessous (ex. `450` / `600`).
 
 ---
 
@@ -275,4 +283,4 @@ Si une page de suivi ne contient aucun graphique, cela signifie que la feuille c
 
 ---
 
-*EV Tracking - Baud Industries - v1.2*
+*EV Tracking - Baud Industries - v1.3*
