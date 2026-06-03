@@ -29,14 +29,14 @@ namespace AmiVanl2.Controller
             var toutes = await assManuelService
                 .LireAssManuelsAsync(AppData.ExcelFilePath, "Suivi ASS manuel");
 
-            // Refs alphanumériques (contiennent une lettre) = EV
-            // Refs numériques pures = Tige de poussée
+            // Refs numériques pures (004xxx, 008xxx) = EV (capuchon/insert)
+            // Refs alphanumériques (90028R, 40030R) = Tige de poussée (boitier/sertissage/soufflet)
             foreach (var ligne in toutes)
             {
                 if (EstRefAlphanum(ligne.Reference))
-                    AppData.AssManuels.Add(ligne);
-                else
                     AppData.TigesPoussee.Add(ligne);
+                else
+                    AppData.AssManuels.Add(ligne);
             }
 
             return (AppData.AssManuels.Count, AppData.TigesPoussee.Count);
