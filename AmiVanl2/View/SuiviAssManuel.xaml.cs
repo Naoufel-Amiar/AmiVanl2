@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace AmiVanl2.View
 {
@@ -130,7 +131,7 @@ namespace AmiVanl2.View
                 Text = "Obj/jour : " + objectifJour.ToString("0") + "  |  Obj semaine : " + objectifSemaine.ToString("0"),
                 FontFamily = new System.Windows.Media.FontFamily("Bahnschrift"),
                 FontSize = 13,
-                FontWeight = FontWeights.SemiBold
+                FontWeight = System.Windows.FontWeights.SemiBold
             };
             PanelInfos.Children.Add(tbObj);
 
@@ -141,8 +142,6 @@ namespace AmiVanl2.View
                 Modele = BuildBarChart(ConstruireProduction(op), objectifJour)
             }).ToList();
 
-            // UniformGrid ajuste automatiquement le nombre de colonnes
-            var panel = PanelGraphiques.ItemsPanel.LoadContent() as UniformGrid;
             PanelGraphiques.ItemsSource = graphItems;
         }
 
