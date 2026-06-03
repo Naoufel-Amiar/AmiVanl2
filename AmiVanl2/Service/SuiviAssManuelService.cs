@@ -82,10 +82,11 @@ namespace AmiVanl2.Service
                             equipeCourante = equipeTexte;
                         }
 
-                        // Layout tige : col3 vide mais col1 contient l'opération
+                        // Layout tige : col3 vide mais col1 contient l'opération (mot sans espace)
                         if (string.IsNullOrWhiteSpace(operationTexte)
                             && !string.IsNullOrWhiteSpace(referenceTexte)
-                            && !EstReferenceValide(referenceTexte))
+                            && !EstReferenceValide(referenceTexte)
+                            && !referenceTexte.Contains(" "))
                         {
                             operationTexte = referenceTexte;
                         }
