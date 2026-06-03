@@ -170,18 +170,15 @@ namespace AmiVanl2.Service
         private bool EstReferenceValide(string reference)
         {
             if (string.IsNullOrWhiteSpace(reference))
-            {
                 return false;
-            }
 
             reference = reference.Trim();
 
-            if (reference.Length != 6)
-            {
+            if (reference.Length < 4 || reference.Length > 10)
                 return false;
-            }
 
-            return int.TryParse(reference, out _);
+            // Accepte les refs numériques pures (004079) et alphanumériques (90028R, 40030R)
+            return reference.All(c => char.IsLetterOrDigit(c));
         }
 
         private string LireReference(ExcelWorksheet feuille, int ligne, int colonne)
