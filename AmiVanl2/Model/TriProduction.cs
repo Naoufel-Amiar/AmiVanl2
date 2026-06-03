@@ -12,22 +12,37 @@
         public double LundiEqu1 { get; set; }
         public double LundiEqu2 { get; set; }
         public double LundiEqu3 { get; set; }
+        public double LundiEqu1b { get; set; }
+        public double LundiEqu2b { get; set; }
+        public double LundiEqu3b { get; set; }
 
         public double MardiEqu1 { get; set; }
         public double MardiEqu2 { get; set; }
         public double MardiEqu3 { get; set; }
+        public double MardiEqu1b { get; set; }
+        public double MardiEqu2b { get; set; }
+        public double MardiEqu3b { get; set; }
 
         public double MercrediEqu1 { get; set; }
         public double MercrediEqu2 { get; set; }
         public double MercrediEqu3 { get; set; }
+        public double MercrediEqu1b { get; set; }
+        public double MercrediEqu2b { get; set; }
+        public double MercrediEqu3b { get; set; }
 
         public double JeudiEqu1 { get; set; }
         public double JeudiEqu2 { get; set; }
         public double JeudiEqu3 { get; set; }
+        public double JeudiEqu1b { get; set; }
+        public double JeudiEqu2b { get; set; }
+        public double JeudiEqu3b { get; set; }
 
         public double VendrediEqu1 { get; set; }
         public double VendrediEqu2 { get; set; }
         public double VendrediEqu3 { get; set; }
+        public double VendrediEqu1b { get; set; }
+        public double VendrediEqu2b { get; set; }
+        public double VendrediEqu3b { get; set; }
 
         public double ProdSamedi { get; set; }
         public double ProdDimanche { get; set; }

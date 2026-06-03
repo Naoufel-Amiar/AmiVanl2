@@ -89,25 +89,25 @@ namespace AmiVanl2.Service
                         tri.ObjectifSemaine = LireDouble(feuille, ligne, 4);
                         tri.ObjectifEquipe = LireDouble(feuille, ligne, 5);
 
-                        tri.LundiEqu1 = LireDouble(feuille, ligne, 6);
-                        tri.LundiEqu2 = LireDouble(feuille, ligne, 7);
-                        tri.LundiEqu3 = LireDouble(feuille, ligne, 8);
+                        (tri.LundiEqu1,    tri.LundiEqu1b)    = LireDoubleFormule(feuille, ligne, 6);
+                        (tri.LundiEqu2,    tri.LundiEqu2b)    = LireDoubleFormule(feuille, ligne, 7);
+                        (tri.LundiEqu3,    tri.LundiEqu3b)    = LireDoubleFormule(feuille, ligne, 8);
 
-                        tri.MardiEqu1 = LireDouble(feuille, ligne, 9);
-                        tri.MardiEqu2 = LireDouble(feuille, ligne, 10);
-                        tri.MardiEqu3 = LireDouble(feuille, ligne, 11);
+                        (tri.MardiEqu1,    tri.MardiEqu1b)    = LireDoubleFormule(feuille, ligne, 9);
+                        (tri.MardiEqu2,    tri.MardiEqu2b)    = LireDoubleFormule(feuille, ligne, 10);
+                        (tri.MardiEqu3,    tri.MardiEqu3b)    = LireDoubleFormule(feuille, ligne, 11);
 
-                        tri.MercrediEqu1 = LireDouble(feuille, ligne, 12);
-                        tri.MercrediEqu2 = LireDouble(feuille, ligne, 13);
-                        tri.MercrediEqu3 = LireDouble(feuille, ligne, 14);
+                        (tri.MercrediEqu1, tri.MercrediEqu1b) = LireDoubleFormule(feuille, ligne, 12);
+                        (tri.MercrediEqu2, tri.MercrediEqu2b) = LireDoubleFormule(feuille, ligne, 13);
+                        (tri.MercrediEqu3, tri.MercrediEqu3b) = LireDoubleFormule(feuille, ligne, 14);
 
-                        tri.JeudiEqu1 = LireDouble(feuille, ligne, 15);
-                        tri.JeudiEqu2 = LireDouble(feuille, ligne, 16);
-                        tri.JeudiEqu3 = LireDouble(feuille, ligne, 17);
+                        (tri.JeudiEqu1,    tri.JeudiEqu1b)    = LireDoubleFormule(feuille, ligne, 15);
+                        (tri.JeudiEqu2,    tri.JeudiEqu2b)    = LireDoubleFormule(feuille, ligne, 16);
+                        (tri.JeudiEqu3,    tri.JeudiEqu3b)    = LireDoubleFormule(feuille, ligne, 17);
 
-                        tri.VendrediEqu1 = LireDouble(feuille, ligne, 18);
-                        tri.VendrediEqu2 = LireDouble(feuille, ligne, 19);
-                        tri.VendrediEqu3 = LireDouble(feuille, ligne, 20);
+                        (tri.VendrediEqu1, tri.VendrediEqu1b) = LireDoubleFormule(feuille, ligne, 18);
+                        (tri.VendrediEqu2, tri.VendrediEqu2b) = LireDoubleFormule(feuille, ligne, 19);
+                        (tri.VendrediEqu3, tri.VendrediEqu3b) = LireDoubleFormule(feuille, ligne, 20);
 
                         tri.ProdSamedi = LireDouble(feuille, ligne, 21);
                         tri.ProdDimanche = LireDouble(feuille, ligne, 22);
@@ -220,6 +220,27 @@ namespace AmiVanl2.Service
             }
 
             return valeur.ToString();
+        }
+
+        private (double total, double op2) LireDoubleFormule(ExcelWorksheet feuille, int ligne, int colonne)
+        {
+            string formule = feuille.Cells[ligne, colonne].Formula ?? "";
+
+            if (!string.IsNullOrWhiteSpace(formule))
+            {
+                int idx = formule.IndexOf('+');
+                if (idx > 0)
+                {
+                    string p1 = formule.Substring(0, idx).Trim().Replace(",", ".");
+                    string p2 = formule.Substring(idx + 1).Trim().Replace(",", ".");
+
+                    if (double.TryParse(p1, NumberStyles.Any, CultureInfo.InvariantCulture, out double a)
+                     && double.TryParse(p2, NumberStyles.Any, CultureInfo.InvariantCulture, out double b))
+                        return (a + b, b);
+                }
+            }
+
+            return (LireDouble(feuille, ligne, colonne), 0);
         }
 
         private double LireDouble(ExcelWorksheet feuille, int ligne, int colonne)

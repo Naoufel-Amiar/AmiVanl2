@@ -54,8 +54,9 @@ namespace AmiVanl2.Service
             public string Reference;
             public string AncienCode;
             public double ObjSemaine;
-            public string[] DayLabels;    // 7 elements : Lun..Dim
-            public double[][] DayEquipes; // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
+            public string[] DayLabels;      // 7 elements : Lun..Dim
+            public double[][] DayEquipes;   // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
+            public double[][] DayEquipesOp2; // null si pas de split, sinon second opérateur par equipe
             public string Commentaire;
         }
 
@@ -531,6 +532,16 @@ namespace AmiVanl2.Service
                         tr.LundiEqu2+tr.MardiEqu2+tr.MercrediEqu2+tr.JeudiEqu2+tr.VendrediEqu2,
                         tr.LundiEqu3+tr.MardiEqu3+tr.MercrediEqu3+tr.JeudiEqu3+tr.VendrediEqu3
                     }
+                },
+                DayEquipesOp2 = new double[][] {
+                    new[] { tr.LundiEqu1b,    tr.LundiEqu2b,    tr.LundiEqu3b    },
+                    new[] { tr.MardiEqu1b,    tr.MardiEqu2b,    tr.MardiEqu3b    },
+                    new[] { tr.MercrediEqu1b, tr.MercrediEqu2b, tr.MercrediEqu3b },
+                    new[] { tr.JeudiEqu1b,    tr.JeudiEqu2b,    tr.JeudiEqu3b    },
+                    new[] { tr.VendrediEqu1b, tr.VendrediEqu2b, tr.VendrediEqu3b },
+                    new[] { 0.0, 0.0, 0.0 },
+                    new[] { 0.0, 0.0, 0.0 },
+                    new[] { 0.0, 0.0, 0.0 }
                 }
             }).ToList();
         }
@@ -643,7 +654,9 @@ namespace AmiVanl2.Service
                         double cw = d == 7 ? colTotalW : colDayW;
                         double cx = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
                         DessinerCelluleEquipes(gfx, cx, ry, cw, dataRowH,
-                            ligne.DayEquipes[d], maxVal, d == 7, d == 5 || d == 6, ligne.ObjSemaine);
+                            ligne.DayEquipes[d],
+                            ligne.DayEquipesOp2?[d],
+                            maxVal, d == 7, d == 5 || d == 6, ligne.ObjSemaine);
                     }
                 }
 
@@ -652,7 +665,7 @@ namespace AmiVanl2.Service
         }
 
         private void DessinerCelluleEquipes(XGraphics gfx, double x, double y, double w, double h,
-            double[] equipes, double maxVal, bool isTotal, bool isWeekend, double objSemaine)
+            double[] equipes, double[] equipesOp2, double maxVal, bool isTotal, bool isWeekend, double objSemaine)
         {
             // Colonne TOTAL : camembert production globale vs objectif semaine
             if (isTotal)
@@ -685,24 +698,14 @@ namespace AmiVanl2.Service
                 return;
             }
 
-            // Obj journalier par equipe = ObjSemaine / (5 jours * 3 equipes)
             double objEquipeJour = (objSemaine > 0 && !isWeekend) ? objSemaine / 15.0 : 0;
-
-            // Couleur vert/rouge selon objectif atteint ou non (gris si weekend sans obj)
-            XColor[] equColors = new XColor[3];
-            for (int e = 0; e < 3; e++)
-            {
-                equColors[e] = isWeekend
-                    ? XColor.FromArgb(100, 150, 220)
-                    : objEquipeJour > 0
-                        ? (equipes[e] >= objEquipeJour ? XColor.FromArgb(40, 160, 80) : XColor.FromArgb(210, 60, 60))
-                        : XColor.FromArgb(100, 150, 220);
-            }
 
             string[] equLabels = { "EQ1", "EQ2", "EQ3" };
 
+            // Valeur affichee plus large quand split (ex : "5000+4800")
+            bool hasSplit = equipesOp2 != null;
             double labelW  = 20;
-            double valW    = 36;
+            double valW    = hasSplit ? 52 : 36;
             double barMaxW = w - labelW - valW - 6;
             if (barMaxW < 4) barMaxW = 4;
 
@@ -729,6 +732,19 @@ namespace AmiVanl2.Service
                 double subY = y + rowIdx * subH;
                 rowIdx++;
 
+                double op2   = (equipesOp2 != null) ? equipesOp2[e] : 0;
+                bool isSplit = op2 > 0;
+                double op1   = isSplit ? equipes[e] - op2 : equipes[e];
+
+                // Objectif effectif : double si deux opérateurs
+                double objRef = isSplit ? objEquipeJour * 2 : objEquipeJour;
+
+                XColor couleur = isWeekend
+                    ? XColor.FromArgb(100, 150, 220)
+                    : objRef > 0
+                        ? (equipes[e] >= objRef ? XColor.FromArgb(40, 160, 80) : XColor.FromArgb(210, 60, 60))
+                        : XColor.FromArgb(100, 150, 220);
+
                 // Label equipe
                 string lbl = isWeekend ? "Prod" : equLabels[e];
                 gfx.DrawString(lbl, FTiny, new XSolidBrush(XColor.FromArgb(70, 70, 70)),
@@ -736,13 +752,33 @@ namespace AmiVanl2.Service
 
                 // Mini barre coloree
                 double barW = Math.Min(barMaxW, Math.Max(2, equipes[e] / maxVal * barMaxW));
-                gfx.DrawRectangle(new XSolidBrush(equColors[e]),
+                gfx.DrawRectangle(new XSolidBrush(couleur),
                     x + labelW + 2, subY + 2, barW, subH - 4);
 
                 // Valeur numerique
-                gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
-                    new XRect(x + labelW + barMaxW + 4, subY, valW, subH),
-                    XStringFormats.CenterLeft);
+                double valX = x + labelW + barMaxW + 4;
+                if (isSplit)
+                {
+                    // Ligne 1 : op1+op2
+                    string valTxt = op1.ToString("0") + "+" + op2.ToString("0");
+                    gfx.DrawString(valTxt, FTiny, XBrushes.Black,
+                        new XRect(valX, subY, valW, subH * 0.55),
+                        XStringFormats.CenterLeft);
+                    // Ligne 2 : /2×obj en gris
+                    if (objRef > 0)
+                    {
+                        string objTxt = "/" + objRef.ToString("0");
+                        gfx.DrawString(objTxt, FTiny, new XSolidBrush(XColor.FromArgb(130, 130, 130)),
+                            new XRect(valX, subY + subH * 0.52, valW, subH * 0.48),
+                            XStringFormats.CenterLeft);
+                    }
+                }
+                else
+                {
+                    gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
+                        new XRect(valX, subY, valW, subH),
+                        XStringFormats.CenterLeft);
+                }
             }
         }
 
