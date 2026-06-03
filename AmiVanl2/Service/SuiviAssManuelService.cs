@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AmiVanl2.Service
@@ -179,7 +180,11 @@ namespace AmiVanl2.Service
                 return false;
 
             // Accepte les refs numériques pures (004079) et alphanumériques (90028R, 40030R)
-            return reference.All(c => char.IsLetterOrDigit(c));
+            foreach (char c in reference)
+                if (!char.IsLetterOrDigit(c))
+                    return false;
+
+            return true;
         }
 
         private string LireReference(ExcelWorksheet feuille, int ligne, int colonne)
