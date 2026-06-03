@@ -669,16 +669,37 @@ namespace AmiVanl2.Service
         private void DessinerCelluleEquipes(XGraphics gfx, double x, double y, double w, double h,
             double[] equipes, double[] equipesOp2, double maxVal, bool isTotal, bool isWeekend, double objSemaine, double objEquipe = 0)
         {
-            // Colonne TOTAL : camembert production globale vs objectif semaine
+            // Colonne TOTAL : texte fixe + camembert sans labels flottants
             if (isTotal)
             {
                 double totalProd = equipes[0] + equipes[1] + equipes[2];
                 gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(240, 240, 240)), x, y, w, h);
                 gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.6), x, y, w, h);
+
                 if (objSemaine > 0)
                 {
-                    var camModel = BuildCamembert("", totalProd, objSemaine);
-                    PlacerGraphique(gfx, camModel, x + 2, y + 2, w - 4, h - 4);
+                    double pct    = Math.Min(100, totalProd / objSemaine * 100);
+                    bool atteint  = totalProd >= objSemaine;
+                    double textH  = 34;
+
+                    // Ligne 1 : prod / obj
+                    gfx.DrawString(totalProd.ToString("0") + " / " + objSemaine.ToString("0"),
+                        FTiny, XBrushes.Black,
+                        new XRect(x + 2, y + 2, w - 4, textH * 0.5),
+                        XStringFormats.TopCenter);
+
+                    // Ligne 2 : % coloré
+                    XBrush pctBrush = atteint
+                        ? new XSolidBrush(XColor.FromArgb(30, 140, 60))
+                        : new XSolidBrush(XColor.FromArgb(200, 40, 40));
+                    gfx.DrawString(pct.ToString("0") + " %",
+                        FSmall, pctBrush,
+                        new XRect(x + 2, y + textH * 0.5, w - 4, textH * 0.55),
+                        XStringFormats.TopCenter);
+
+                    // Camembert sans labels dans l'espace restant
+                    var camModel = BuildCamembertSansLabels(totalProd, objSemaine);
+                    PlacerGraphique(gfx, camModel, x + 2, y + textH, w - 4, h - textH - 2);
                 }
                 else if (totalProd > 0)
                 {
@@ -1015,6 +1036,28 @@ namespace AmiVanl2.Service
             if (prod <= 0 && reste <= 0)
                 serie.Slices.Add(new PieSlice("Aucune donnee", 1)
                     { Fill = OxyColor.FromRgb(200, 200, 200) });
+
+            model.Series.Add(serie);
+            return model;
+        }
+
+        private PlotModel BuildCamembertSansLabels(double prod, double obj)
+        {
+            double reste = Math.Max(0, obj - prod);
+            var model = new PlotModel { Background = OxyColors.White };
+            var serie = new PieSeries
+            {
+                StrokeThickness    = 0,
+                InsideLabelFormat  = "",
+                OutsideLabelFormat = ""
+            };
+
+            if (prod > 0)
+                serie.Slices.Add(new PieSlice("", prod) { Fill = OxyColor.FromRgb(40, 160, 80) });
+            if (reste > 0)
+                serie.Slices.Add(new PieSlice("", reste) { Fill = OxyColor.FromRgb(210, 60, 60) });
+            if (prod <= 0 && reste <= 0)
+                serie.Slices.Add(new PieSlice("", 1) { Fill = OxyColor.FromRgb(200, 200, 200) });
 
             model.Series.Add(serie);
             return model;
