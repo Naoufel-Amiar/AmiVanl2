@@ -394,6 +394,7 @@ namespace AmiVanl2.Service
                     g.Sum(x => x.ProdDimanche)
                 },
                 ObjSemaine  = g.Sum(x => x.ObjectifSemaine),
+                ObjJour     = g.Max(x => x.ObjectifJour),
                 TotalProd   = g.Sum(x => x.TotalProduction),
                 Commentaire = g.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Commentaire))?.Commentaire ?? ""
             }).ToList();
@@ -417,7 +418,7 @@ namespace AmiVanl2.Service
                     var r  = refs[i];
                     double ry = y0 + i * rowH;
 
-                    var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine);
+                    var barModel = BuildBarresJournalieres(r.BarLabel, r.DayLabels, r.Prods, r.ObjSemaine, r.ObjJour);
                     PlacerGraphique(gfx, barModel, Marge, ry, barW - 6, rowH - 8);
 
                     DessinerCamembertAvecTexte(gfx, r.CamTitre, r.TotalProd, r.ObjSemaine,
@@ -434,14 +435,15 @@ namespace AmiVanl2.Service
         // ===================================================================
 
         private PlotModel BuildBarresJournalieres(string titre, string[] jourLabels,
-            double[] prods, double objSemaine)
+            double[] prods, double objSemaine, double objJourDirect = 0)
         {
             var model = new PlotModel { Title = titre, Background = OxyColors.White };
 
             var axeX = new CategoryAxis { Position = AxisPosition.Bottom };
             foreach (var l in jourLabels) axeX.Labels.Add(l);
 
-            double objJour   = objSemaine > 0 ? objSemaine / 7.0 : 0;
+            double objJour = objJourDirect > 0 ? objJourDirect
+                           : (objSemaine > 0 ? objSemaine / 7.0 : 0);
             double maxProd   = prods.Length > 0 ? prods.Max() : 0;
             double yMax      = objJour > 0 ? Math.Max(maxProd, objJour) * 1.12 : (maxProd > 0 ? maxProd * 1.1 : 1);
             var axeY = new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Maximum = yMax, Title = "Production" };
