@@ -134,18 +134,18 @@ namespace AmiVanl2.View
             }
             var tbObj = new TextBlock
             {
-                Text = "Obj/jour : " + objectifJour.ToString("0") + "  |  Obj semaine : " + objectifSemaine.ToString("0"),
+                Text = "Obj semaine : " + objectifSemaine.ToString("0"),
                 FontFamily = new System.Windows.Media.FontFamily("Bahnschrift"),
                 FontSize = 13,
                 FontWeight = System.Windows.FontWeights.SemiBold
             };
             PanelInfos.Children.Add(tbObj);
 
-            // Graphiques dynamiques
+            // Graphiques dynamiques — chaque opération utilise son propre ObjEquipe
             var graphItems = operations.Select(op => new GraphItem
             {
                 Titre = op.Operation,
-                Modele = BuildBarChart(ConstruireProduction(op), objectifJour)
+                Modele = BuildBarChart(ConstruireProduction(op), op.ObjectifEquipe)
             }).ToList();
 
             PanelGraphiques.ItemsSource = graphItems;
