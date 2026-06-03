@@ -823,9 +823,21 @@ namespace AmiVanl2.Service
                 }
                 else
                 {
-                    gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
-                        new XRect(valX, subY, valW, subH),
-                        XStringFormats.CenterLeft);
+                    if (objRef > 0)
+                    {
+                        gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
+                            new XRect(valX, subY, valW, subH * 0.55),
+                            XStringFormats.CenterLeft);
+                        gfx.DrawString("/" + objRef.ToString("0"), FTiny, new XSolidBrush(XColor.FromArgb(130, 130, 130)),
+                            new XRect(valX, subY + subH * 0.52, valW, subH * 0.48),
+                            XStringFormats.CenterLeft);
+                    }
+                    else
+                    {
+                        gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
+                            new XRect(valX, subY, valW, subH),
+                            XStringFormats.CenterLeft);
+                    }
                 }
             }
         }
