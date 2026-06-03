@@ -948,7 +948,7 @@ namespace AmiVanl2.Service
                             double cw = d == 7 ? colTotalW : colDayW;
                             double cx = x0 + colRefW + (d < 7 ? d * colDayW : 7 * colDayW);
                             DessinerCelluleEquipes(gfx, cx, opY, cw, dataRowH,
-                                dayEquipes[d], maxVal,
+                                dayEquipes[d], null, maxVal,
                                 isTotal: d == 7,
                                 isWeekend: d == 5 || d == 6,
                                 objSemaine: opObj);
