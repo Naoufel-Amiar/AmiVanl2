@@ -70,15 +70,15 @@ namespace AmiVanl2.Service
             PdfDocument doc = new PdfDocument();
             doc.Info.Title = "Rapport de Suivi de Production";
 
-            var presses    = AppData.Presses?.Where(p => ProdTotalPresse(p) > 0).ToList()
+            var presses    = AppData.Presses?.Where(p => ProdTotalPresse(p) > 0    || p.ObjectifSemaine > 0).ToList()
                              ?? new List<PresseProduction>();
-            var assAutos   = AppData.AssAutos?.Where(a => ProdTotalAssAuto(a) > 0).ToList()
+            var assAutos   = AppData.AssAutos?.Where(a => ProdTotalAssAuto(a) > 0  || a.ObjectifSemaine > 0).ToList()
                              ?? new List<AssAutoProduction>();
-            var joints     = AppData.Joints?.Where(j => j.TotalProduction > 0).ToList()
+            var joints     = AppData.Joints?.Where(j => j.TotalProduction > 0      || j.ObjectifSemaine > 0).ToList()
                              ?? new List<JointProduction>();
-            var tris       = AppData.Tris?.Where(t => ProdTotalTri(t) > 0).ToList()
+            var tris       = AppData.Tris?.Where(t => ProdTotalTri(t) > 0          || t.ObjectifSemaine > 0).ToList()
                              ?? new List<TriProduction>();
-            var assManuels = AppData.AssManuels?.Where(m => ProdTotalAssManu(m) > 0).ToList()
+            var assManuels = AppData.AssManuels?.Where(m => ProdTotalAssManu(m) > 0 || m.ObjectifSemaine > 0).ToList()
                              ?? new List<AssManuelProduction>();
 
             PageGarde(doc, presses, assAutos, joints, tris, assManuels);
