@@ -54,9 +54,10 @@ namespace AmiVanl2.Service
             public string Reference;
             public string AncienCode;
             public double ObjSemaine;
-            public string[] DayLabels;      // 7 elements : Lun..Dim
-            public double[][] DayEquipes;   // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
-            public double[][] DayEquipesOp2; // null si pas de split, sinon second opérateur par equipe
+            public double ObjEquipe;            // objectif journalier par équipe (direct Excel)
+            public string[] DayLabels;          // 7 elements : Lun..Dim
+            public double[][] DayEquipes;       // [8][3] : 7 jours + index 7=Total, chacun [equ1,equ2,equ3]
+            public double[][] DayEquipesOp2;    // null si pas de split, sinon second opérateur par equipe
             public string Commentaire;
         }
 
@@ -514,6 +515,7 @@ namespace AmiVanl2.Service
                 Reference   = tr.Reference,
                 AncienCode  = tr.AncienCode,
                 ObjSemaine  = tr.ObjectifSemaine,
+                ObjEquipe   = tr.ObjectifEquipe,
                 Commentaire = tr.Commentaire,
                 DayLabels  = new[] {
                     tr.LabelLundi, tr.LabelMardi, tr.LabelMercredi,
@@ -656,7 +658,7 @@ namespace AmiVanl2.Service
                         DessinerCelluleEquipes(gfx, cx, ry, cw, dataRowH,
                             ligne.DayEquipes[d],
                             ligne.DayEquipesOp2?[d],
-                            maxVal, d == 7, d == 5 || d == 6, ligne.ObjSemaine);
+                            maxVal, d == 7, d == 5 || d == 6, ligne.ObjSemaine, ligne.ObjEquipe);
                     }
                 }
 
@@ -665,7 +667,7 @@ namespace AmiVanl2.Service
         }
 
         private void DessinerCelluleEquipes(XGraphics gfx, double x, double y, double w, double h,
-            double[] equipes, double[] equipesOp2, double maxVal, bool isTotal, bool isWeekend, double objSemaine)
+            double[] equipes, double[] equipesOp2, double maxVal, bool isTotal, bool isWeekend, double objSemaine, double objEquipe = 0)
         {
             // Colonne TOTAL : camembert production globale vs objectif semaine
             if (isTotal)
@@ -698,7 +700,10 @@ namespace AmiVanl2.Service
                 return;
             }
 
-            double objEquipeJour = (objSemaine > 0 && !isWeekend) ? objSemaine / 15.0 : 0;
+            // Priorité à l'objectif par équipe fourni directement par l'Excel
+            double objEquipeJour = isWeekend ? 0
+                : objEquipe > 0 ? objEquipe
+                : (objSemaine > 0 ? objSemaine / 15.0 : 0);
 
             string[] equLabels = { "EQ1", "EQ2", "EQ3" };
 
