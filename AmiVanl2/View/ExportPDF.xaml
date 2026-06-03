@@ -118,7 +118,7 @@
 
             <Button Grid.Column="1"
                     Name="BtnPdfImprimer"
-                    Content="Version impression"
+                    Content="Réunion HPC"
                     Width="180"
                     Height="44"
                     Margin="0,0,10,0"
@@ -129,13 +129,13 @@
                     Foreground="White"
                     BorderThickness="0"
                     Cursor="Hand"
-                    ToolTip="PDF sans pages de séparation — idéal pour imprimer et distribuer"
+                    ToolTip="PDF sans pages de séparation — format compact pour impression en réunion HPC"
                     Click="BtnPdfImprimer_Click"/>
 
             <Button Grid.Column="2"
                     Name="BtnPdfGenerate"
-                    Content="Rapport complet"
-                    Width="180"
+                    Content="Mail / Transfert service"
+                    Width="210"
                     Height="44"
                     FontFamily="Bahnschrift"
                     FontSize="13"
@@ -144,7 +144,7 @@
                     Foreground="White"
                     BorderThickness="0"
                     Cursor="Hand"
-                    ToolTip="PDF avec pages de séparation par section — idéal pour présenter en réunion"
+                    ToolTip="PDF avec pages de séparation par section — format long pour envoi par mail ou transfert aux autres services"
                     Click="BtnPdfGenerate_Click"/>
         </Grid>
     </Grid>
