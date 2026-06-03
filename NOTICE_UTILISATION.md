@@ -7,13 +7,14 @@
 
 1. [Présentation générale](#1-présentation-générale)
 2. [Démarrage — Importer le fichier Excel](#2-démarrage--importer-le-fichier-excel)
-3. [Suivi Presse](#3-suivi-presse)
-4. [Assemblage Automatique](#4-assemblage-automatique)
-5. [Assemblage Manuel](#5-assemblage-manuel)
-6. [Suivi Tri](#6-suivi-tri)
-7. [Suivi Joints](#7-suivi-joints)
-8. [Export PDF](#8-export-pdf)
-9. [Erreurs fréquentes](#9-erreurs-fréquentes)
+3. [Conditions du fichier Excel](#3-conditions-du-fichier-excel)
+4. [Suivi Presse](#4-suivi-presse)
+5. [Assemblage Automatique](#5-assemblage-automatique)
+6. [Assemblage Manuel](#6-assemblage-manuel)
+7. [Suivi Tri](#7-suivi-tri)
+8. [Suivi Joints](#8-suivi-joints)
+9. [Export PDF](#9-export-pdf)
+10. [Erreurs fréquentes](#10-erreurs-fréquentes)
 
 ---
 
@@ -83,7 +84,46 @@ Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
 
 ---
 
-## 3. Suivi Presse
+## 3. Conditions du fichier Excel
+
+EV Tracking lit le fichier Excel en se basant sur une structure précise. Pour que l'analyse soit correcte, plusieurs règles doivent être respectées.
+
+### Conserver la structure des feuilles
+
+Le logiciel identifie les données par le **nom exact des feuilles** et par la **position des colonnes**. Il ne faut pas :
+
+- Renommer les feuilles Excel
+- Déplacer, ajouter ou supprimer des colonnes
+- Modifier les lignes d'en-tête ou de date en haut du tableau
+- Fusionner ou découper des cellules dans les zones de données
+
+Le fichier doit rester au format standard de production Baud Industries. Tout écart de structure peut entraîner une lecture incorrecte ou une erreur à l'import.
+
+### Utiliser un tableur standardisé
+
+Chaque semaine, le fichier Excel doit être **une copie du modèle standard**, pas un fichier recopié manuellement. Les saisies se font uniquement dans les cellules de production prévues à cet effet — jamais dans les colonnes de formule ou d'en-tête.
+
+### Règle de saisie — Feuille Tri : deux personnes dans la même équipe
+
+Sur la feuille **Suivi Tri**, chaque cellule de production correspond à la production d'une équipe pour un jour donné. Si **deux personnes ont produit dans la même équipe le même jour**, il ne faut **pas saisir deux valeurs séparément** — le logiciel ne lit qu'une seule cellule par équipe et par jour.
+
+La règle est de **saisir la somme des deux productions directement dans la cellule**, à l'aide d'une formule Excel :
+
+```
+= Valeur X + Valeur Y
+```
+
+**Exemple :** si l'équipe 1 a produit 320 pièces (opérateur A) et 180 pièces (opérateur B) :
+
+```
+= 320 + 180
+```
+
+Excel affichera `500` dans la cellule, et le logiciel lira `500` comme production de l'équipe 1 pour ce jour.
+
+---
+
+## 4. Suivi Presse
 
 ### Accéder à la page
 
@@ -115,7 +155,7 @@ La page affiche :
 
 ---
 
-## 4. Assemblage Automatique
+## 5. Assemblage Automatique
 
 ### Accéder à la page
 
@@ -135,17 +175,17 @@ La page Assemblage Automatique fonctionne de manière identique à la page **Sui
 
 ---
 
-## 5. Assemblage Manuel
+## 6. Assemblage Manuel
 
 L'assemblage manuel est divisé en deux familles, accessibles via deux boutons distincts dans le menu :
 
-### 5a. Assemblage Manuel — EV
+### 6a. Assemblage Manuel — EV
 
 Cliquer sur **Ass. Manuel — EV** dans le menu à gauche.
 
 Contient les références numériques (ex. 004xxx, 008xxx). Les opérations suivies sont typiquement **Capuchon**, **Insert** et, pour certaines références, **Goupille**. Le nombre de graphiques s'adapte automatiquement au nombre d'opérations présentes dans le fichier Excel.
 
-### 5b. Assemblage Manuel — Tige de poussée
+### 6b. Assemblage Manuel — Tige de poussée
 
 Cliquer sur **Ass. Manuel — Tige** dans le menu à gauche.
 
@@ -192,7 +232,7 @@ L'objectif journalier est calculé dynamiquement : **objectif équipe × nombre 
 
 ---
 
-## 6. Suivi Tri
+## 7. Suivi Tri
 
 ### Accéder à la page
 
@@ -222,7 +262,7 @@ Un **commentaire** s'affiche si une remarque est associée à la référence.
 
 ---
 
-## 7. Suivi Joints
+## 8. Suivi Joints
 
 ### Accéder à la page
 
@@ -240,7 +280,7 @@ La page Suivi Joints fonctionne de manière identique à la page **Suivi Tri** :
 
 ---
 
-## 8. Export PDF
+## 9. Export PDF
 
 ### Accéder à la page
 
@@ -285,7 +325,7 @@ Dans les tableaux Assemblage Manuel et Tri, la **valeur de production** est affi
 
 ---
 
-## 9. Erreurs fréquentes
+## 10. Erreurs fréquentes
 
 ### Le fichier Excel ne s'importe pas
 
