@@ -143,13 +143,19 @@ L'assemblage manuel est divisé en deux familles, accessibles via deux boutons d
 
 Cliquer sur **Ass. Manuel — EV** dans le menu à gauche.
 
-Contient les références numériques (ex. 004xxx, 008xxx). Les opérations suivies sont typiquement **Capuchon** et **Insert**.
+Contient les références numériques (ex. 004xxx, 008xxx). Les opérations suivies sont typiquement **Capuchon**, **Insert** et, pour certaines références, **Goupille**. Le nombre de graphiques s'adapte automatiquement au nombre d'opérations présentes dans le fichier Excel.
 
 ### 5b. Assemblage Manuel — Tige de poussée
 
 Cliquer sur **Ass. Manuel — Tige** dans le menu à gauche.
 
 Contient les références alphanumériques (ex. 90028R, 40030R). Les opérations suivies sont typiquement **Boitier**, **Sertissage** et **Soufflet**.
+
+### Séparation EV / Tige
+
+Les deux familles sont issues de la même feuille Excel "Suivi ASS manuel". Le logiciel les sépare automatiquement à l'import selon le format de la référence :
+- **Référence numérique** → famille EV → page **Ass. Manuel — EV** dans le logiciel et section dédiée dans le PDF
+- **Référence alphanumérique** → famille Tige → page **Ass. Manuel — Tige** dans le logiciel et section dédiée dans le PDF
 
 ### Structure commune des deux pages
 
