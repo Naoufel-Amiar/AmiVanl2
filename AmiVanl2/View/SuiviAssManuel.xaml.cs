@@ -16,41 +16,51 @@ namespace AmiVanl2.View
         private AssManuelController assManuelController;
         private Button _boutonSelectionne;
 
+        private List<AssManuelProduction> _source;
+        private string _titrePage;
+
         private static readonly string[] LabelsJours =
             { "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim" };
 
-        public SuiviAssManuel()
+        // Ass Manuel EV (capuchon / insert)
+        public SuiviAssManuel() : this(null, "SUIVI ASS MANUEL — EV") { }
+
+        // Constructeur générique
+        public SuiviAssManuel(List<AssManuelProduction> source, string titrePage)
         {
             InitializeComponent();
             assManuelController = new AssManuelController();
+            _source = source;
+            _titrePage = titrePage;
             Loaded += SuiviAssManuel_Loaded;
         }
 
         private async void SuiviAssManuel_Loaded(object sender, RoutedEventArgs e)
         {
+            TitrePage.Text = _titrePage;
+
             if (AppData.AssManuels == null || AppData.AssManuels.Count == 0)
                 await assManuelController.ChargerAssManuelsAsync();
+
+            // Si source non passée → défaut = EV
+            if (_source == null)
+                _source = AppData.AssManuels;
 
             ChargerBoutons();
         }
 
         private void ChargerBoutons()
         {
-            var refsAvecProd = AppData.AssManuels
-                .GroupBy(x => x.Reference)
-                .Where(g => g.Any(p =>
-                    p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
-                    p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
-                    p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
-                    p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
-                    p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0))
-                .Select(g => new RefViewModel { Reference = g.Key })
+            var refs = _source
+                .Select(x => x.Reference)
+                .Distinct()
+                .Select(r => new RefViewModel { Reference = r })
                 .ToList();
 
-            ListeBoutons.ItemsSource = refsAvecProd;
+            ListeBoutons.ItemsSource = refs;
 
-            if (refsAvecProd.Count > 0)
-                ChargerDetailReference(refsAvecProd[0].Reference);
+            if (refs.Count > 0)
+                ChargerDetailReference(refs[0].Reference);
         }
 
         private void BtnReference_Click(object sender, RoutedEventArgs e)
@@ -73,33 +83,26 @@ namespace AmiVanl2.View
 
         private void ChargerDetailReference(string reference)
         {
-            AssManuelProduction capuchon = AppData.AssManuels.FirstOrDefault(x =>
-                x.Reference == reference && x.Operation.ToLower().Contains("capuchon"));
+            var operations = _source
+                .Where(x => x.Reference == reference)
+                .OrderBy(x => x.Operation)
+                .ToList();
 
-            AssManuelProduction insert = AppData.AssManuels.FirstOrDefault(x =>
-                x.Reference == reference && x.Operation.ToLower().Contains("insert"));
+            if (operations.Count == 0) return;
 
-            double objectifSemaine = capuchon != null
-                ? (capuchon.ObjectifSemaine > 0 ? capuchon.ObjectifSemaine : (insert != null ? insert.ObjectifSemaine : 0))
-                : (insert != null ? insert.ObjectifSemaine : 0);
+            double objectifSemaine = operations
+                .Select(x => x.ObjectifSemaine)
+                .FirstOrDefault(v => v > 0);
 
             double objectifJour = objectifSemaine / 5.0;
 
-            double[] prodCapuchon = ConstruireProduction(capuchon);
-            double[] prodInsert   = ConstruireProduction(insert);
-
-            double totalCapuchon = prodCapuchon.Take(5).Sum();
-            double totalInsert   = prodInsert.Take(5).Sum();
-
             TitreReference.Text = "Référence : " + reference;
 
-            AssManuelProduction anyWithComment = AppData.AssManuels
-                .FirstOrDefault(x => x.Reference == reference
-                    && !string.IsNullOrWhiteSpace(x.Commentaire));
-
-            if (anyWithComment != null)
+            // Commentaire
+            var avecCommentaire = operations.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Commentaire));
+            if (avecCommentaire != null)
             {
-                TxtCommentaire.Text = anyWithComment.Commentaire;
+                TxtCommentaire.Text = avecCommentaire.Commentaire;
                 PanelCommentaire.Visibility = Visibility.Visible;
             }
             else
@@ -107,17 +110,40 @@ namespace AmiVanl2.View
                 PanelCommentaire.Visibility = Visibility.Collapsed;
             }
 
-            TxtInfoCapuchon.Text = "Capuchon : " + totalCapuchon.ToString("0")
-                + " / " + objectifSemaine.ToString("0") + " pcs";
+            // Infos résumé
+            PanelInfos.Children.Clear();
+            foreach (var op in operations)
+            {
+                double[] prods = ConstruireProduction(op);
+                double total = prods.Take(5).Sum();
+                var tb = new TextBlock
+                {
+                    Text = op.Operation + " : " + total.ToString("0") + " / " + objectifSemaine.ToString("0") + " pcs",
+                    FontFamily = new System.Windows.Media.FontFamily("Bahnschrift"),
+                    FontSize = 13,
+                    Margin = new Thickness(0, 0, 25, 0)
+                };
+                PanelInfos.Children.Add(tb);
+            }
+            var tbObj = new TextBlock
+            {
+                Text = "Obj/jour : " + objectifJour.ToString("0") + "  |  Obj semaine : " + objectifSemaine.ToString("0"),
+                FontFamily = new System.Windows.Media.FontFamily("Bahnschrift"),
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold
+            };
+            PanelInfos.Children.Add(tbObj);
 
-            TxtInfoInsert.Text = "Insert : " + totalInsert.ToString("0")
-                + " / " + objectifSemaine.ToString("0") + " pcs";
+            // Graphiques dynamiques
+            var graphItems = operations.Select(op => new GraphItem
+            {
+                Titre = op.Operation,
+                Modele = BuildBarChart(ConstruireProduction(op), objectifJour)
+            }).ToList();
 
-            TxtInfoObjectif.Text = "Obj/jour : " + objectifJour.ToString("0")
-                + "  |  Obj semaine : " + objectifSemaine.ToString("0");
-
-            PlotCapuchon.Model = BuildBarChart(prodCapuchon, objectifJour);
-            PlotInsert.Model   = BuildBarChart(prodInsert,   objectifJour);
+            // UniformGrid ajuste automatiquement le nombre de colonnes
+            var panel = PanelGraphiques.ItemsPanel.LoadContent() as UniformGrid;
+            PanelGraphiques.ItemsSource = graphItems;
         }
 
         private PlotModel BuildBarChart(double[] prods, double objectifJour)
@@ -206,6 +232,12 @@ namespace AmiVanl2.View
         public class RefViewModel
         {
             public string Reference { get; set; } = "";
+        }
+
+        public class GraphItem
+        {
+            public string Titre { get; set; } = "";
+            public PlotModel Modele { get; set; }
         }
     }
 }

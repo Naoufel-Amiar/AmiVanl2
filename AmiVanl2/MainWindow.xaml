@@ -130,8 +130,11 @@
                 <Button Content="Assemblage Auto" Name="BtnSuiviAssAuto"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssAuto_Click"/>
 
-                <Button Content="Assemblage Manuel" Name="BtnSuiviAssManuel"
+                <Button Content="Ass. Manuel — EV" Name="BtnSuiviAssManuel"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssManuel_Click"/>
+
+                <Button Content="Ass. Manuel — Tige" Name="BtnSuiviAssTige"
+                    Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviAssTige_Click"/>
 
                 <Button Content="Suivi Joints" Name="BtnSuiviJoints"
                     Style="{StaticResource MenuButtonStyle}" Click="BtnSuiviJoints_Click"/>
