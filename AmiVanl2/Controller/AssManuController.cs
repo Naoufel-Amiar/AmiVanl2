@@ -1,6 +1,7 @@
 ﻿using AmiVanl2.Model;
 using AmiVanl2.Service;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AmiVanl2.Controller
@@ -33,7 +34,7 @@ namespace AmiVanl2.Controller
             }
             catch (Exception ex) when (ex.Message.Contains("introuvable"))
             {
-                AppData.AssManuels = new System.Collections.Generic.List<AmiVanl2.Model.AssManuelProduction>();
+                AppData.AssManuels = new List<AssManuelProduction>();
             }
 
             try
@@ -44,7 +45,7 @@ namespace AmiVanl2.Controller
             }
             catch (Exception ex) when (ex.Message.Contains("introuvable"))
             {
-                AppData.TigesPoussee = new System.Collections.Generic.List<AmiVanl2.Model.AssManuelProduction>();
+                AppData.TigesPoussee = new List<AssManuelProduction>();
             }
 
             return (AppData.AssManuels.Count, AppData.TigesPoussee.Count);
