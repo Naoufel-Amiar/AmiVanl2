@@ -141,11 +141,11 @@ namespace AmiVanl2.View
             };
             PanelInfos.Children.Add(tbObj);
 
-            // Graphiques dynamiques — chaque opération utilise son propre ObjEquipe
+            // Graphiques dynamiques — seuil = ObjEquipe × nb équipes actives sur la semaine
             var graphItems = operations.Select(op => new GraphItem
             {
                 Titre = op.Operation,
-                Modele = BuildBarChart(ConstruireProduction(op), op.ObjectifEquipe)
+                Modele = BuildBarChart(ConstruireProduction(op), op.ObjectifEquipe * NbEquipesActives(op))
             }).ToList();
 
             PanelGraphiques.ItemsSource = graphItems;
@@ -215,6 +215,15 @@ namespace AmiVanl2.View
             model.Series.Add(serie);
 
             return model;
+        }
+
+        private int NbEquipesActives(AssManuelProduction op)
+        {
+            int nb = 0;
+            if (op.LundiEqu1 + op.MardiEqu1 + op.MercrediEqu1 + op.JeudiEqu1 + op.VendrediEqu1 > 0) nb++;
+            if (op.LundiEqu2 + op.MardiEqu2 + op.MercrediEqu2 + op.JeudiEqu2 + op.VendrediEqu2 > 0) nb++;
+            if (op.LundiEqu3 + op.MardiEqu3 + op.MercrediEqu3 + op.JeudiEqu3 + op.VendrediEqu3 > 0) nb++;
+            return nb > 0 ? nb : 1;
         }
 
         private double[] ConstruireProduction(AssManuelProduction op)
