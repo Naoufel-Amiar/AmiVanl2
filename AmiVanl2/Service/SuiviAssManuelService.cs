@@ -11,7 +11,7 @@ namespace AmiVanl2.Service
 {
     public class SuiviAssManuelService
     {
-        public async Task<List<AssManuelProduction>> LireAssManuelsAsync(string filePath)
+        public async Task<List<AssManuelProduction>> LireAssManuelsAsync(string filePath, string nomFeuille = "Suivi ASS manuel")
         {
             return await Task.Run(() =>
             {
@@ -27,12 +27,12 @@ namespace AmiVanl2.Service
                 using (ExcelPackage package = new ExcelPackage(fichier))
                 {
                     ExcelWorksheet feuille =
-                        TrouverFeuille(package, "Suivi ASS manuel");
+                        TrouverFeuille(package, nomFeuille);
 
                     if (feuille == null)
                     {
                         throw new Exception(
-                            "La feuille 'Suivi ASS manuel' est introuvable.");
+                            $"La feuille '{nomFeuille}' est introuvable.");
                     }
 
                     if (feuille.Dimension == null)

@@ -155,7 +155,7 @@ namespace AmiVanl2.View
                 int nbTris =
                     await triController.ChargerTrisAsync();
 
-                int nbAssManu =
+                (int nbAssManu, int nbTige) =
                     await assManuelController.ChargerAssManuelsAsync();
 
                 AppData.DonneesGenerees = true;
@@ -188,13 +188,23 @@ namespace AmiVanl2.View
                         p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
                         p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0));
 
+                int refTigeAvecProd = AppData.TigesPoussee
+                    .GroupBy(p => p.Reference)
+                    .Count(g => g.Any(p =>
+                        p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
+                        p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
+                        p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
+                        p.JeudiEqu1 + p.JeudiEqu2 + p.JeudiEqu3 +
+                        p.VendrediEqu1 + p.VendrediEqu2 + p.VendrediEqu3 > 0));
+
                 MessageBox.Show(
                     "✔ Données chargées avec succès !\n\n" +
-                    "PRESSE        : " + refPresseAvecProd + " réf. en production  (" + nb + " lignes lues)\n" +
-                    "ASS. AUTO  : " + refAssAutoAvecProd + " réf. en production  (" + nbAssAuto + " lignes lues)\n" +
-                    "JOINTS         : " + refJointsAvecProd + " réf. en production  (" + nbJoints + " lignes lues)\n" +
-                    "TRI                : " + refTrisAvecProd + " réf. en production  (" + nbTris + " lignes lues)\n" +
-                    "ASS. MANU : " + refAssManuAvecProd + " réf. en production  (" + nbAssManu + " lignes lues)"
+                    "PRESSE          : " + refPresseAvecProd + " réf. en production  (" + nb + " lignes lues)\n" +
+                    "ASS. AUTO    : " + refAssAutoAvecProd + " réf. en production  (" + nbAssAuto + " lignes lues)\n" +
+                    "JOINTS           : " + refJointsAvecProd + " réf. en production  (" + nbJoints + " lignes lues)\n" +
+                    "TRI                  : " + refTrisAvecProd + " réf. en production  (" + nbTris + " lignes lues)\n" +
+                    "ASS. MANU EV : " + refAssManuAvecProd + " réf. en production  (" + nbAssManu + " lignes lues)\n" +
+                    "ASS. TIGE        : " + refTigeAvecProd + " réf. en production  (" + nbTige + " lignes lues)"
                 );
             }
 

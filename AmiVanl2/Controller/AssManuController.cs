@@ -15,7 +15,7 @@ namespace AmiVanl2.Controller
                 new SuiviAssManuelService();
         }
 
-        public async Task<int> ChargerAssManuelsAsync()
+        public async Task<(int nbEV, int nbTige)> ChargerAssManuelsAsync()
         {
             if (string.IsNullOrWhiteSpace(AppData.ExcelFilePath))
             {
@@ -23,12 +23,31 @@ namespace AmiVanl2.Controller
             }
 
             AppData.AssManuels.Clear();
+            AppData.TigesPoussee.Clear();
 
-            AppData.AssManuels =
-                await assManuelService
-                    .LireAssManuelsAsync(AppData.ExcelFilePath);
+            try
+            {
+                AppData.AssManuels =
+                    await assManuelService
+                        .LireAssManuelsAsync(AppData.ExcelFilePath, "Suivi ASS EV");
+            }
+            catch (Exception ex) when (ex.Message.Contains("introuvable"))
+            {
+                AppData.AssManuels = new System.Collections.Generic.List<AmiVanl2.Model.AssManuelProduction>();
+            }
 
-            return AppData.AssManuels.Count;
+            try
+            {
+                AppData.TigesPoussee =
+                    await assManuelService
+                        .LireAssManuelsAsync(AppData.ExcelFilePath, "Suivi ASS Tige de poussée");
+            }
+            catch (Exception ex) when (ex.Message.Contains("introuvable"))
+            {
+                AppData.TigesPoussee = new System.Collections.Generic.List<AmiVanl2.Model.AssManuelProduction>();
+            }
+
+            return (AppData.AssManuels.Count, AppData.TigesPoussee.Count);
         }
     }
 }

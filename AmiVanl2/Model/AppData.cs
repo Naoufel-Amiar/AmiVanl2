@@ -23,8 +23,12 @@ namespace AmiVanl2.Model
         public static List<TriProduction> Tris { get; set; }
             = new List<TriProduction>();
 
-        // Données récupérées feuille Ass Manu
+        // Données récupérées feuille Ass Manu EV
         public static List<AssManuelProduction> AssManuels { get; set; }
+            = new List<AssManuelProduction>();
+
+        // Données récupérées feuille Ass Manu Tige de poussée
+        public static List<AssManuelProduction> TigesPoussee { get; set; }
             = new List<AssManuelProduction>();
 
         public static bool DonneesGenerees { get; set; } = false;
@@ -45,6 +49,7 @@ namespace AmiVanl2.Model
 
             AssAutos.Clear();
             AssManuels.Clear();
+            TigesPoussee.Clear();
 
             Presses.Clear();
             Tris.Clear();

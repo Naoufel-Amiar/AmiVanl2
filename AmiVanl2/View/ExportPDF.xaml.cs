@@ -78,13 +78,25 @@ namespace AmiVanl2.View
                 },
                 new SectionPdfItem
                 {
-                    Titre         = "Assemblage Manuel",
+                    Titre         = "Ass. Manuel — EV",
                     Fond          = new SolidColorBrush(Color.FromArgb(80, 230, 210, 235)),
                     NbElements    = AppData.AssManuels?.Count > 0
-                        ? AppData.AssManuels.Count + " ligne(s) — tableau par équipe et par opération"
+                        ? AppData.AssManuels.Count + " ligne(s) — EV (boîtiers, soufflets…)"
                         : "",
                     Statut        = AppData.AssManuels?.Count > 0 ? "✓ Inclus" : "⚠ Aucune donnée",
                     CouleurStatut = AppData.AssManuels?.Count > 0
+                        ? new SolidColorBrush(Color.FromRgb(30, 120, 30))
+                        : new SolidColorBrush(Color.FromRgb(180, 60, 0))
+                },
+                new SectionPdfItem
+                {
+                    Titre         = "Ass. Manuel — Tige",
+                    Fond          = new SolidColorBrush(Color.FromArgb(80, 200, 220, 240)),
+                    NbElements    = AppData.TigesPoussee?.Count > 0
+                        ? AppData.TigesPoussee.Count + " ligne(s) — Tige de poussée"
+                        : "",
+                    Statut        = AppData.TigesPoussee?.Count > 0 ? "✓ Inclus" : "⚠ Aucune donnée",
+                    CouleurStatut = AppData.TigesPoussee?.Count > 0
                         ? new SolidColorBrush(Color.FromRgb(30, 120, 30))
                         : new SolidColorBrush(Color.FromRgb(180, 60, 0))
                 }
