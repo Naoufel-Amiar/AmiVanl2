@@ -121,6 +121,8 @@ La règle est de **saisir la somme des deux productions directement dans la cell
 
 Excel affichera `500` dans la cellule, et le logiciel lira `500` comme production de l'équipe 1 pour ce jour.
 
+**Avantage dans le rapport PDF :** lorsqu'une cellule contient une formule addition (`= X + Y`), le logiciel détecte automatiquement les deux valeurs et les affiche séparément dans le tableau PDF sous la forme `X+Y` (ex. `2463+4931`). Cela permet de voir la contribution individuelle de chaque personne au sein de la même équipe, tout en conservant le total pour le calcul des objectifs.
+
 ---
 
 ## 4. Suivi Presse
