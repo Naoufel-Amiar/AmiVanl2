@@ -52,6 +52,7 @@
 
         <!-- Titre -->
         <TextBlock
+            x:Name="TitrePage"
             Grid.Row="0"
             Text="SUIVI ASS MANUEL"
             FontSize="30"
@@ -121,82 +122,53 @@
             </StackPanel>
         </Border>
 
-        <!-- Infos résumé -->
+        <!-- Infos résumé dynamiques -->
         <StackPanel
             x:Name="PanelInfos"
             Grid.Row="4"
             Orientation="Horizontal"
             HorizontalAlignment="Center"
-            Margin="0,0,0,10">
+            Margin="0,0,0,10"/>
 
-            <TextBlock x:Name="TxtInfoCapuchon"
-                       FontFamily="Bahnschrift" FontSize="13"
-                       Margin="0,0,30,0"/>
-
-            <TextBlock x:Name="TxtInfoInsert"
-                       FontFamily="Bahnschrift" FontSize="13"
-                       Margin="0,0,30,0"/>
-
-            <TextBlock x:Name="TxtInfoObjectif"
-                       FontFamily="Bahnschrift" FontSize="13"
-                       FontWeight="SemiBold"/>
-        </StackPanel>
-
-        <!-- 2 graphiques côte à côte -->
-        <Grid Grid.Row="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0"
-                    Margin="0,0,8,0"
-                    BorderBrush="#DDD"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Text="Capuchon"
-                        FontSize="16"
-                        FontFamily="Bahnschrift"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,5"/>
-                    <oxy:PlotView
-                        x:Name="PlotCapuchon"
-                        Grid.Row="1"/>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="1"
-                    Margin="8,0,0,0"
-                    BorderBrush="#DDD"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Text="Insert"
-                        FontSize="16"
-                        FontFamily="Bahnschrift"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,5"/>
-                    <oxy:PlotView
-                        x:Name="PlotInsert"
-                        Grid.Row="1"/>
-                </Grid>
-            </Border>
-        </Grid>
+        <!-- Graphiques dynamiques (N opérations) -->
+        <ScrollViewer Grid.Row="5"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="PanelGraphiques">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="6,0"
+                                BorderBrush="#DDD"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Text="{Binding Titre}"
+                                    FontSize="16"
+                                    FontFamily="Bahnschrift"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,5"/>
+                                <oxy:PlotView
+                                    Grid.Row="1"
+                                    Model="{Binding Modele}"
+                                    MinHeight="250"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
 
     </Grid>
 </UserControl>

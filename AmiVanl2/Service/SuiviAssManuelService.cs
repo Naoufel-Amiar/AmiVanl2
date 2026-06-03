@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AmiVanl2.Service
 {
     public class SuiviAssManuelService
     {
-        public async Task<List<AssManuelProduction>> LireAssManuelsAsync(string filePath)
+        public async Task<List<AssManuelProduction>> LireAssManuelsAsync(string filePath, string nomFeuille = "Suivi ASS manuel")
         {
             return await Task.Run(() =>
             {
@@ -26,12 +27,12 @@ namespace AmiVanl2.Service
                 using (ExcelPackage package = new ExcelPackage(fichier))
                 {
                     ExcelWorksheet feuille =
-                        TrouverFeuille(package, "Suivi ASS manuel");
+                        TrouverFeuille(package, nomFeuille);
 
                     if (feuille == null)
                     {
                         throw new Exception(
-                            "La feuille 'Suivi ASS manuel' est introuvable.");
+                            $"La feuille '{nomFeuille}' est introuvable.");
                     }
 
                     if (feuille.Dimension == null)
@@ -52,6 +53,7 @@ namespace AmiVanl2.Service
 
                     string referenceCourante = "";
                     string equipeCourante = "";
+                    double objSemaineCourante = 0;
 
                     int lignesVidesConsecutives = 0;
 
@@ -69,6 +71,10 @@ namespace AmiVanl2.Service
                         if (EstReferenceValide(referenceTexte))
                         {
                             referenceCourante = referenceTexte;
+                            lignesVidesConsecutives = 0;
+                            // Layout tige : ObjSemaine sur la ligne de référence
+                            double objRef = LireDouble(feuille, ligne, 4);
+                            objSemaineCourante = objRef > 0 ? objRef : 0;
                         }
 
                         if (!string.IsNullOrWhiteSpace(equipeTexte))
@@ -76,11 +82,20 @@ namespace AmiVanl2.Service
                             equipeCourante = equipeTexte;
                         }
 
+                        // Layout tige : col3 vide mais col1 contient l'opération (mot sans espace)
+                        if (string.IsNullOrWhiteSpace(operationTexte)
+                            && !string.IsNullOrWhiteSpace(referenceTexte)
+                            && !EstReferenceValide(referenceTexte)
+                            && !referenceTexte.Contains(" "))
+                        {
+                            operationTexte = referenceTexte;
+                        }
+
                         if (string.IsNullOrWhiteSpace(operationTexte))
                         {
                             lignesVidesConsecutives++;
 
-                            if (lignesVidesConsecutives >= 6)
+                            if (lignesVidesConsecutives >= 15)
                             {
                                 break;
                             }
@@ -110,7 +125,9 @@ namespace AmiVanl2.Service
                         assManuel.Equipe = equipeCourante;
                         assManuel.Operation = operationTexte;
 
-                        assManuel.ObjectifSemaine = LireDouble(feuille, ligne, 4);
+                        // ObjSemaine : sur la ligne op (EV) ou mémorisé depuis la ligne ref (tige)
+                        double objSemaineRow = LireDouble(feuille, ligne, 4);
+                        assManuel.ObjectifSemaine = objSemaineRow > 0 ? objSemaineRow : objSemaineCourante;
                         assManuel.ObjectifEquipe = LireDouble(feuille, ligne, 5);
 
                         assManuel.LundiEqu1 = LireDouble(feuille, ligne, 6);
@@ -170,18 +187,22 @@ namespace AmiVanl2.Service
         private bool EstReferenceValide(string reference)
         {
             if (string.IsNullOrWhiteSpace(reference))
-            {
                 return false;
-            }
 
             reference = reference.Trim();
 
-            if (reference.Length != 6)
-            {
+            if (reference.Length < 4 || reference.Length > 10)
                 return false;
+
+            // Doit contenir au moins un chiffre (rejette les opérations pures : boitier, sertissage…)
+            bool hasDigit = false;
+            foreach (char c in reference)
+            {
+                if (!char.IsLetterOrDigit(c)) return false;
+                if (char.IsDigit(c)) hasDigit = true;
             }
 
-            return int.TryParse(reference, out _);
+            return hasDigit;
         }
 
         private string LireReference(ExcelWorksheet feuille, int ligne, int colonne)

@@ -34,6 +34,7 @@ namespace AmiVanl2
             BtnSuiviJoints.IsEnabled = navigationActive;
             BtnSuiviTri.IsEnabled = navigationActive;
             BtnSuiviAssManuel.IsEnabled = navigationActive;
+            BtnSuiviAssTige.IsEnabled = navigationActive;
             BtnExportPDF.IsEnabled = navigationActive;
 
             BtnAccueilImport.IsEnabled = true;
@@ -80,7 +81,14 @@ namespace AmiVanl2
         {
             MarquerBoutonActif(BtnSuiviAssManuel);
             MainContent.Children.Clear();
-            MainContent.Children.Add(new SuiviAssManuel());
+            MainContent.Children.Add(new SuiviAssManuel(AppData.AssManuels, "SUIVI ASS MANUEL — EV"));
+        }
+
+        private void BtnSuiviAssTige_Click(object sender, RoutedEventArgs e)
+        {
+            MarquerBoutonActif(BtnSuiviAssTige);
+            MainContent.Children.Clear();
+            MainContent.Children.Add(new SuiviAssManuel(AppData.TigesPoussee, "SUIVI ASS MANUEL — TIGE DE POUSSÉE"));
         }
 
         private void BtnSuiviJoints_Click(object sender, RoutedEventArgs e)

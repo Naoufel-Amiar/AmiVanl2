@@ -1,6 +1,7 @@
 ﻿using AmiVanl2.Model;
 using AmiVanl2.Service;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AmiVanl2.Controller
@@ -15,7 +16,7 @@ namespace AmiVanl2.Controller
                 new SuiviAssManuelService();
         }
 
-        public async Task<int> ChargerAssManuelsAsync()
+        public async Task<(int nbEV, int nbTige)> ChargerAssManuelsAsync()
         {
             if (string.IsNullOrWhiteSpace(AppData.ExcelFilePath))
             {
@@ -23,12 +24,29 @@ namespace AmiVanl2.Controller
             }
 
             AppData.AssManuels.Clear();
+            AppData.TigesPoussee.Clear();
 
-            AppData.AssManuels =
-                await assManuelService
-                    .LireAssManuelsAsync(AppData.ExcelFilePath);
+            var toutes = await assManuelService
+                .LireAssManuelsAsync(AppData.ExcelFilePath, "Suivi ASS manuel");
 
-            return AppData.AssManuels.Count;
+            // Refs numériques pures (004xxx, 008xxx) = EV (capuchon/insert)
+            // Refs alphanumériques (90028R, 40030R) = Tige de poussée (boitier/sertissage/soufflet)
+            foreach (var ligne in toutes)
+            {
+                if (EstRefAlphanum(ligne.Reference))
+                    AppData.TigesPoussee.Add(ligne);
+                else
+                    AppData.AssManuels.Add(ligne);
+            }
+
+            return (AppData.AssManuels.Count, AppData.TigesPoussee.Count);
+        }
+
+        private bool EstRefAlphanum(string reference)
+        {
+            foreach (char c in reference)
+                if (char.IsLetter(c)) return true;
+            return false;
         }
     }
 }
