@@ -153,18 +153,36 @@ Contient les références alphanumériques (ex. 90028R, 40030R). Les opérations
 
 ### Structure commune des deux pages
 
-La barre de boutons en haut liste toutes les références disponibles. Cliquer sur une référence pour afficher son détail.
+Une **barre de boutons** en haut liste toutes les références ayant une production ou un objectif renseigné. Cliquer sur un bouton pour afficher le détail de la référence correspondante.
 
-Pour chaque référence, un **graphique en barres par opération** est affiché (autant de graphiques que d'opérations pour la référence).
+#### Bandeau de résumé
+
+Sous le titre de la référence, une ligne de résumé affiche pour chaque opération :
+
+```
+Capuchon : 1 250 / 2 000 pcs    Insert : 980 / 2 000 pcs    Obj semaine : 2 000
+```
+
+#### Commentaire
+
+Si une remarque est saisie dans le fichier Excel pour la référence sélectionnée, elle s'affiche dans un **bandeau jaune** sous le résumé.
+
+#### Graphiques
+
+Un **graphique en barres** est affiché pour chaque opération de la référence (le nombre de graphiques s'adapte automatiquement au nombre d'opérations).
+
+Chaque graphique représente la production journalière (somme des équipes actives) sur 7 jours (lundi → dimanche).
 
 **Code couleur des barres :**
 - **Vert** : production du jour ≥ objectif journalier
 - **Rouge** : production du jour < objectif journalier
-- **Bleu** : week-end
+- **Bleu** : journée de week-end (samedi ou dimanche)
 
-L'**objectif journalier** affiché correspond à l'objectif équipe multiplié par le nombre d'équipes actives sur la semaine.
+Une **ligne orange horizontale** matérialise l'objectif journalier.
 
-Un **commentaire** s'affiche si une remarque est associée à la référence dans le fichier Excel.
+#### Calcul de l'objectif journalier
+
+L'objectif journalier est calculé dynamiquement : **objectif équipe × nombre d'équipes ayant produit sur la semaine**. Si une seule équipe est active, l'objectif reste celui d'une équipe ; s'il y en a deux, il est doublé. Cela permet d'avoir un seuil cohérent avec la réalité de la semaine.
 
 ---
 
