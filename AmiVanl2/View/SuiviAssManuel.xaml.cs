@@ -55,7 +55,7 @@ namespace AmiVanl2.View
             var refs = _source
                 .GroupBy(x => x.Reference)
                 .Where(g => g.Any(p =>
-                    p.ObjectifSemaine > 0 || p.ObjectifEquipe > 0 ||
+                    p.ObjectifSemaine > 0 ||
                     p.LundiEqu1 + p.LundiEqu2 + p.LundiEqu3 +
                     p.MardiEqu1 + p.MardiEqu2 + p.MardiEqu3 +
                     p.MercrediEqu1 + p.MercrediEqu2 + p.MercrediEqu3 +
