@@ -508,6 +508,7 @@ namespace AmiVanl2.Service
                 Reference   = jt.Reference,
                 AncienCode  = jt.AncienCode,
                 ObjSemaine  = jt.ObjectifSemaine,
+                ObjEquipe   = jt.ObjectifEquipe,
                 Commentaire = jt.Commentaire,
                 DayLabels  = new[] {
                     jt.LabelLundi, jt.LabelMardi, jt.LabelMercredi,
