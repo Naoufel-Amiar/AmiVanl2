@@ -638,11 +638,11 @@ namespace AmiVanl2.Service
                     gfx.DrawRectangle(new XSolidBrush(refBg), x0, ry, colRefW, dataRowH);
                     gfx.DrawRectangle(new XPen(XColor.FromArgb(155, 155, 155), 0.5), x0, ry, colRefW, dataRowH);
 
-                    // Layout : Ref (bold) | Zone jaune commentaire | AncienCode | Obj
+                    // Layout : Ref (bold) | Zone jaune commentaire | AncienCode | Obj.sem | Obj/éq
                     double refNumH   = dataRowH * 0.26;
                     double triCommentH = dataRowH * 0.38;
                     double remaining = dataRowH - refNumH - triCommentH;
-                    double subLineH  = remaining / 2.0;
+                    double subLineH  = remaining / 3.0;
 
                     // Ligne 1 : Numéro de référence
                     gfx.DrawString(ligne.Reference, FBold, XBrushes.Black,
@@ -671,9 +671,16 @@ namespace AmiVanl2.Service
                         XStringFormats.CenterLeft);
 
                     // Ligne 4 : Objectif semaine
-                    gfx.DrawString("Obj: " + ligne.ObjSemaine.ToString("0"), FTiny, XBrushes.Black,
+                    gfx.DrawString("Obj.sem: " + ligne.ObjSemaine.ToString("0"), FTiny, XBrushes.Black,
                         new XRect(x0 + 3, triCommentY + triCommentH + subLineH, colRefW - 6, subLineH),
                         XStringFormats.CenterLeft);
+
+                    // Ligne 5 : Objectif par équipe
+                    if (ligne.ObjEquipe > 0)
+                        gfx.DrawString("Obj/éq: " + ligne.ObjEquipe.ToString("0"), FTiny,
+                            new XSolidBrush(XColor.FromArgb(80, 60, 120)),
+                            new XRect(x0 + 3, triCommentY + triCommentH + subLineH * 2, colRefW - 6, subLineH),
+                            XStringFormats.CenterLeft);
 
                     // Cellules journalieres
                     for (int d = 0; d < 8; d++)
@@ -810,37 +817,16 @@ namespace AmiVanl2.Service
                 double valX = x + labelW + barMaxW + 4;
                 if (isSplit)
                 {
-                    // Ligne 1 : op1+op2
                     string valTxt = op1.ToString("0") + "+" + op2.ToString("0");
                     gfx.DrawString(valTxt, FTiny, XBrushes.Black,
-                        new XRect(valX, subY, valW, subH * 0.55),
+                        new XRect(valX, subY, valW, subH),
                         XStringFormats.CenterLeft);
-                    // Ligne 2 : /2×obj en gris
-                    if (objRef > 0)
-                    {
-                        string objTxt = "/" + objRef.ToString("0");
-                        gfx.DrawString(objTxt, FTiny, new XSolidBrush(XColor.FromArgb(130, 130, 130)),
-                            new XRect(valX, subY + subH * 0.52, valW, subH * 0.48),
-                            XStringFormats.CenterLeft);
-                    }
                 }
                 else
                 {
-                    if (objRef > 0)
-                    {
-                        gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
-                            new XRect(valX, subY, valW, subH * 0.55),
-                            XStringFormats.CenterLeft);
-                        gfx.DrawString("/" + objRef.ToString("0"), FTiny, new XSolidBrush(XColor.FromArgb(130, 130, 130)),
-                            new XRect(valX, subY + subH * 0.52, valW, subH * 0.48),
-                            XStringFormats.CenterLeft);
-                    }
-                    else
-                    {
-                        gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
-                            new XRect(valX, subY, valW, subH),
-                            XStringFormats.CenterLeft);
-                    }
+                    gfx.DrawString(equipes[e].ToString("0"), FTiny, XBrushes.Black,
+                        new XRect(valX, subY, valW, subH),
+                        XStringFormats.CenterLeft);
                 }
             }
         }
@@ -969,10 +955,16 @@ namespace AmiVanl2.Service
                             ? commentZoneY + commentZoneH
                             : opY + dataRowH * 0.72;
                         double labelH2 = dataRowH * 0.28;
-                        gfx.DrawString(opLabel + "  Obj: " + op.ObjectifSemaine.ToString("0"),
+                        double labelSubH = labelH2 / 2.0;
+                        gfx.DrawString(opLabel + "  Obj.sem: " + op.ObjectifSemaine.ToString("0"),
                             FTiny, new XSolidBrush(XColor.FromArgb(100, 60, 120)),
-                            new XRect(x0 + 3, labelY, colRefW - 6, labelH2),
+                            new XRect(x0 + 3, labelY, colRefW - 6, labelSubH),
                             XStringFormats.CenterLeft);
+                        if (op.ObjectifEquipe > 0)
+                            gfx.DrawString("Obj/éq: " + op.ObjectifEquipe.ToString("0"),
+                                FTiny, new XSolidBrush(XColor.FromArgb(80, 60, 120)),
+                                new XRect(x0 + 3, labelY + labelSubH, colRefW - 6, labelSubH),
+                                XStringFormats.CenterLeft);
 
                         // Separateur entre operations
                         if (opIdx > 0)
