@@ -319,13 +319,14 @@ namespace AmiVanl2.Service
 
         private void PagePresseComplet(PdfDocument doc, List<PresseProduction> presses)
         {
-            var refs = presses.GroupBy(p => p.Reference).Select(g => new {
-                BarLabel = g.Key.ToString("000000") + " — " +
+            var refs = presses.GroupBy(p => new { p.Reference, p.Machine }).Select(g => new {
+                BarLabel = g.Key.Reference.ToString("000000") + " — " +
                            string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
-                           "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                           "  [" + g.Key.Machine + "]" +
                            "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
-                CamTitre = g.Key.ToString("000000") + " - " +
-                           string.Join("/", g.Select(x => x.AncienCode).Distinct()),
+                CamTitre = g.Key.Reference.ToString("000000") + " - " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                           " [" + g.Key.Machine + "]",
                 DayLabels = new[] {
                     g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
                     g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
@@ -377,13 +378,14 @@ namespace AmiVanl2.Service
 
         private void PageAssAutoComplet(PdfDocument doc, List<AssAutoProduction> assAutos)
         {
-            var refs = assAutos.GroupBy(a => a.Reference).Select(g => new {
-                BarLabel = g.Key + " — " +
+            var refs = assAutos.GroupBy(a => new { a.Reference, a.Machine }).Select(g => new {
+                BarLabel = g.Key.Reference + " — " +
                            string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
-                           "  [" + string.Join("+", g.Select(x => x.Machine).Distinct()) + "]" +
+                           "  [" + g.Key.Machine + "]" +
                            "   Obj.sem: " + g.Sum(x => x.ObjectifSemaine).ToString("0"),
-                CamTitre = g.Key + " - " +
-                           string.Join("/", g.Select(x => x.AncienCode).Distinct()),
+                CamTitre = g.Key.Reference + " - " +
+                           string.Join("/", g.Select(x => x.AncienCode).Distinct()) +
+                           " [" + g.Key.Machine + "]",
                 DayLabels = new[] {
                     g.First().LabelLundi, g.First().LabelMardi, g.First().LabelMercredi,
                     g.First().LabelJeudi, g.First().LabelVendredi, g.First().LabelSamedi, g.First().LabelDimanche
