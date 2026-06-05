@@ -79,7 +79,7 @@ Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
 ### Important
 
 - Le fichier Excel doit être au format `.xlsx` ou `.xls`
-- Le fichier peut rester ouvert dans Excel en même temps — si l'import échoue avec un message "fichier en cours d'utilisation", fermer Excel puis réessayer
+- Le fichier peut rester ouvert dans Excel en même temps, si l'import échoue avec un message "fichier en cours d'utilisation", fermer Excel puis réessayer
 - Si un nouveau fichier est importé, les données précédentes sont effacées et remplacées
 
 ---
@@ -92,7 +92,7 @@ Le fichier de référence utilisé par EV Tracking s'appelle **Feuilles Relevé 
 
 Ouvrir le fichier Excel et aller dans la feuille **`PARAMETRES`**, cellule **`A4`**.
 
-Remplacer le numéro de semaine par celui de la semaine en cours. Toutes les dates (lundi au dimanche) de toutes les feuilles du fichier se recalculent automatiquement — aucune date ne doit être saisie manuellement ailleurs.
+Remplacer le numéro de semaine par celui de la semaine en cours. Toutes les dates (lundi au dimanche) de toutes les feuilles du fichier se recalculent automatiquement, aucune date ne doit être saisie manuellement ailleurs.
 
 ```
 Feuille : PARAMETRES
@@ -108,7 +108,7 @@ Avant de saisir les données de production, vérifier que les paramètres fixes 
 - **Objectif équipe** (`Obj. / Equipe`) : objectif journalier par équipe
 - **Références et machines** : s'assurer que les références présentes correspondent aux productions prévues. Des références peuvent être ajoutées en fin de tableau sans impacter les autres.
 
-Ces valeurs restent souvent identiques d'une semaine à l'autre — il suffit de les modifier uniquement si les objectifs changent.
+Ces valeurs restent souvent identiques d'une semaine à l'autre, il suffit de les modifier uniquement si les objectifs changent.
 
 ### Étape 3 — Saisir les données de production
 
@@ -127,7 +127,7 @@ Tout écart de structure peut entraîner une lecture incorrecte ou une erreur à
 
 ### Règle de saisie — Feuille Tri : deux personnes dans la même équipe
 
-Sur la feuille **Suivi Tri**, chaque cellule de production correspond à la production d'une équipe pour un jour donné. Si **deux personnes ont produit dans la même équipe le même jour**, il ne faut **pas saisir deux valeurs séparément** — le logiciel ne lit qu'une seule cellule par équipe et par jour.
+Sur la feuille **Suivi Tri**, chaque cellule de production correspond à la production d'une équipe pour un jour donné. Si **deux personnes ont produit dans la même équipe le même jour**, il ne faut **pas saisir deux valeurs séparément**, le logiciel ne lit qu'une seule cellule par équipe et par jour.
 
 La règle est de **saisir la somme des deux productions directement dans la cellule**, à l'aide d'une formule Excel :
 
@@ -155,7 +155,7 @@ Cliquer sur **Suivi Presse** dans le menu à gauche.
 
 ### Page 1 — Vue d'ensemble
 
-La page affiche les graphiques en barres pour chaque combinaison **référence + machine**. Si une même référence est produite sur deux machines différentes, elle apparaît en deux lignes distinctes — les productions ne sont pas fusionnées.
+La page affiche les graphiques en barres pour chaque combinaison **référence + machine**. Si une même référence est produite sur deux machines différentes, elle apparaît en deux lignes distinctes, les productions ne sont pas fusionnées.
 
 **Lecture des barres :**
 - Chaque barre représente la production d'une référence/machine pour un jour de la semaine
