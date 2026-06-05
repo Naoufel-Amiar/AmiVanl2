@@ -84,24 +84,38 @@ Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
 
 ---
 
-## 3. Conditions du fichier Excel
+## 3. Préparer le fichier Excel de la semaine
 
-EV Tracking lit le fichier Excel en se basant sur une structure précise. Pour que l'analyse soit correcte, plusieurs règles doivent être respectées.
+Le fichier Excel utilisé par EV Tracking est un **fichier standardisé de référence**. Il ne faut jamais le modifier structurellement — il sert de modèle réutilisable chaque semaine.
 
-### Conserver la structure des feuilles
+### Étape 1 — Changer le numéro de semaine
 
-Le logiciel identifie les données par le **nom exact des feuilles** et par la **position des colonnes**. Il ne faut pas :
+En haut du fichier Excel, une cellule contient le numéro de semaine. Il suffit de **mettre à jour ce numéro** pour que toutes les dates (lundi au dimanche) se recalculent automatiquement dans toutes les feuilles. Aucune date ne doit être saisie manuellement.
+
+### Étape 2 — Vérifier ou ajuster les paramètres
+
+Avant de saisir les données de production, vérifier que les paramètres fixes sont corrects pour la semaine en cours :
+
+- **Objectif semaine** (`Obj. semaine`) : quantité totale attendue pour la semaine
+- **Objectif équipe** (`Obj. / Equipe`) : objectif journalier par équipe
+- **Références et machines** : s'assurer que les références présentes correspondent aux productions prévues. Des références peuvent être ajoutées en fin de tableau sans impacter les autres.
+
+Ces valeurs restent souvent identiques d'une semaine à l'autre — il suffit de les modifier uniquement si les objectifs changent.
+
+### Étape 3 — Saisir les données de production
+
+Une fois le numéro de semaine mis à jour et les paramètres vérifiés, remplir les cellules de production au fur et à mesure de la semaine. Les colonnes sont organisées par jour (lundi → dimanche) et par équipe (EQ1, EQ2, EQ3).
+
+### Règles à respecter
+
+EV Tracking lit le fichier en se basant sur une structure précise. Il ne faut pas :
 
 - Renommer les feuilles Excel
 - Déplacer, ajouter ou supprimer des colonnes
 - Modifier les lignes d'en-tête ou de date en haut du tableau
 - Fusionner ou découper des cellules dans les zones de données
 
-Le fichier doit rester au format standard de production Baud Industries. Tout écart de structure peut entraîner une lecture incorrecte ou une erreur à l'import.
-
-### Utiliser un tableur standardisé
-
-Chaque semaine, le fichier Excel doit être **une copie du modèle standard**, pas un fichier recopié manuellement. Les saisies se font uniquement dans les cellules de production prévues à cet effet — jamais dans les colonnes de formule ou d'en-tête.
+Tout écart de structure peut entraîner une lecture incorrecte ou une erreur à l'import.
 
 ### Règle de saisie — Feuille Tri : deux personnes dans la même équipe
 
@@ -133,7 +147,7 @@ Cliquer sur **Suivi Presse** dans le menu à gauche.
 
 ### Page 1 — Vue d'ensemble
 
-La page affiche deux graphiques en barres côte à côte, regroupant toutes les références et machines de l'atelier Presse.
+La page affiche les graphiques en barres pour chaque combinaison **référence + machine**. Si une même référence est produite sur deux machines différentes, elle apparaît en deux lignes distinctes — les productions ne sont pas fusionnées.
 
 **Lecture des barres :**
 - Chaque barre représente la production d'une référence/machine pour un jour de la semaine
@@ -316,14 +330,22 @@ Les deux versions contiennent les mêmes données et graphiques — seule la mis
 
 Le rapport est généré au **format A3 paysage**. Il contient une page par atelier avec :
 
-- **Presse** : graphiques en barres journalières + camembert de taux d'atteinte par référence
-- **Assemblage Automatique** : idem Presse
-- **Assemblage Manuel — EV** : tableau par opération (Capuchon / Insert) avec barres et objectifs par équipe
-- **Assemblage Manuel — Tige** : tableau par opération (Boitier / Sertissage / Soufflet) avec barres et objectifs par équipe
-- **Tri** : camemberts par équipe et par jour pour chaque référence
+- **Presse** : une ligne par combinaison référence + machine — graphique en barres journalières + camembert de taux d'atteinte
+- **Assemblage Automatique** : idem Presse, une ligne par combinaison référence + machine
+- **Assemblage Manuel — EV** : tableau par opération (Capuchon / Insert / Goupille) avec barres de production par équipe
+- **Assemblage Manuel — Tige** : tableau par opération (Boitier / Sertissage / Soufflet) avec barres de production par équipe
+- **Tri** : tableau journalier par équipe et par référence
 - **Joints** : idem Tri
 
-Dans les tableaux Assemblage Manuel et Tri, la **valeur de production** est affichée dans chaque case, ainsi que **l'objectif journalier** en gris dessous (ex. `450` / `600`).
+**Lecture des tableaux Tri, Joints et Assemblage Manuel :**
+
+Dans chaque cellule journalière, seule la **valeur de production** de chaque équipe est affichée, avec la barre colorée (vert = objectif atteint, rouge = objectif non atteint). La colonne de gauche centralise toutes les informations de référence :
+
+- Numéro de référence (en gras)
+- Zone commentaire (fond jaune)
+- Ancien code
+- `Obj.sem` : objectif hebdomadaire total
+- `Obj/éq` : objectif journalier par équipe — c'est ce seuil qui détermine la couleur de chaque barre
 
 ---
 
