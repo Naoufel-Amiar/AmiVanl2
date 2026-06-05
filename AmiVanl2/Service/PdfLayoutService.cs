@@ -948,8 +948,9 @@ namespace AmiVanl2.Service
                     gfx.DrawString(op0.Reference, FBold, XBrushes.Black,
                         new XRect(x0 + 3, ry, colRefW - 6, refNameH), XStringFormats.CenterLeft);
 
-                    // Zone commentaire juste sous le numéro de ref — toujours visible
-                    double commentZoneH = dataRowH * 0.38;
+                    // Zone commentaire juste sous le numéro de ref — réduite si pas d'objectif semaine
+                    bool hasObjSemaine = ops.Any(o => o.ObjectifSemaine > 0);
+                    double commentZoneH = dataRowH * (hasObjSemaine ? 0.38 : 0.19);
                     double commentZoneY = ry + refNameH;
 
                     // Lignes par operation
