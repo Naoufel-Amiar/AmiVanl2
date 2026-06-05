@@ -86,11 +86,19 @@ Les boutons du menu se déverrouillent ensuite pour accéder aux pages de suivi.
 
 ## 3. Préparer le fichier Excel de la semaine
 
-Le fichier Excel utilisé par EV Tracking est un **fichier standardisé de référence**. Il ne faut jamais le modifier structurellement — il sert de modèle réutilisable chaque semaine.
+Le fichier de référence utilisé par EV Tracking s'appelle **Feuilles Relevé de prod EV Standard**. Il est conçu pour être réutilisé chaque semaine sans modification de structure.
 
 ### Étape 1 — Changer le numéro de semaine
 
-En haut du fichier Excel, une cellule contient le numéro de semaine. Il suffit de **mettre à jour ce numéro** pour que toutes les dates (lundi au dimanche) se recalculent automatiquement dans toutes les feuilles. Aucune date ne doit être saisie manuellement.
+Ouvrir le fichier Excel et aller dans la feuille **`PARAMETRES`**, cellule **`A4`**.
+
+Remplacer le numéro de semaine par celui de la semaine en cours. Toutes les dates (lundi au dimanche) de toutes les feuilles du fichier se recalculent automatiquement — aucune date ne doit être saisie manuellement ailleurs.
+
+```
+Feuille : PARAMETRES
+Cellule : A4
+Valeur  : numéro de semaine (ex. 23)
+```
 
 ### Étape 2 — Vérifier ou ajuster les paramètres
 
