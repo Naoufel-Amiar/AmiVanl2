@@ -962,7 +962,9 @@ namespace AmiVanl2.Service
                         string opLabel = string.IsNullOrWhiteSpace(op.Operation)
                             ? "Op " + (opIdx + 1)
                             : op.Operation;
-                        double labelY = opY + dataRowH * 0.72;
+                        double labelY = opIdx == 0
+                            ? commentZoneY + commentZoneH
+                            : opY + dataRowH * 0.72;
                         double labelH2 = dataRowH * 0.28;
                         gfx.DrawString(opLabel + "  Obj: " + op.ObjectifSemaine.ToString("0"),
                             FTiny, new XSolidBrush(XColor.FromArgb(100, 60, 120)),
